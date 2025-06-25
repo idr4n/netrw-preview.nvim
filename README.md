@@ -196,7 +196,7 @@ require("netrw-preview").setup({
 
 The `l` key (or your configured `enter_dir` mapping) provides intelligent behavior:
 
-- **On directories**: Normal navigation (same as ``)
+- **On directories**: Normal navigation (same as `<CR>`)
 - **On files**: Opens file AND preserves proper alternate buffer context
   - If opening the same file you came from → alternate = previous alternate buffer
   - If opening a different file → alternate = file you came from
