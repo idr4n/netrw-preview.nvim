@@ -15,6 +15,7 @@ Along the way, I decided to also include other enhancements to improve my own wo
 ## ✨ Features
 
 - **Live Preview**: Real-time preview of files and directories as you navigate
+- **Flexible Preview Layout**: Choose vertical or horizontal splits with configurable positioning and sizing
 - **Smart Binary Detection**: Automatically detects and handles binary files with file size information
 - **Smart Enter Navigation**: Intelligent file/directory opening with proper alternate buffer handling
 - **Flexible Directory Shortcuts**: Create custom keybindings for frequently accessed directories
@@ -24,7 +25,7 @@ Along the way, I decided to also include other enhancements to improve my own wo
 - **File Operations**: Quick path copying, insertion, and navigation utilities, ala `vim-vinager`
 - **Reveal Functionality**: Jump to current file in netrw from any buffer
 - **Command-Based Interface**: Use commands for flexible external mapping
-- **Highly Configurable**: Customize preview window size, keybindings, and behavior
+- **Highly Configurable**: Customize preview window size and layout, keybindings, and behavior
 
 ## 📦 Installation
 
@@ -75,8 +76,17 @@ require("netrw-preview").setup()
 
 ```lua
 require("netrw-preview").setup({
-  -- Preview window width as percentage of total width
+  -- Preview window width as percentage of total width (for vertical splits)
   preview_width = 60,
+
+  -- Preview window height as percentage of total height (for horizontal splits)
+  preview_height = 60,
+
+  -- Preview window layout orientation
+  preview_layout = "vertical", -- "vertical" or "horizontal"
+
+  -- Side to open preview window
+  preview_side = "right", -- "left" or "right" for vertical, "above" or "below" for horizontal
 
   -- Enable preview by default when entering netrw
   preview_enabled = false,
@@ -94,7 +104,7 @@ require("netrw-preview").setup({
     toggle_preview = "p",
 
     -- Keys to close netrw (multiple options)
-    close_netrw = { "q", "gq", "" },
+    close_netrw = { "q", "gq", "<c-q>" },
 
     -- Navigate to parent directory
     parent_dir = "h",
@@ -146,7 +156,10 @@ require("netrw-preview").setup({
 
 ```lua
 require("netrw-preview").setup({
-  preview_width = 70,           -- Wider preview window
+  preview_width = 70,           -- Wider preview window (vertical splits)
+  preview_height = 30,          -- Preview height (horizontal splits)
+  preview_layout = "horizontal",-- Use horizontal split
+  preview_side = "below",       -- Preview below netrw
   preview_enabled = true,       -- Auto-enable preview
   mappings = {
     toggle_preview = "<space>",
@@ -205,6 +218,8 @@ This creates intuitive buffer navigation when jumping between files via netrw.
 - **Directory Preview**: Shows directory contents with folders listed first
 - **Binary Files**: Displays file information for binary files
 - **Large Files**: Automatically truncates large files (>500 lines) for performance
+- **Layout Options**: Choose between vertical (left/right) or horizontal (above/below) preview splits
+- **Customizable Sizing**: Configure preview window width for vertical splits or height for horizontal splits
 
 ## 📝 Commands
 

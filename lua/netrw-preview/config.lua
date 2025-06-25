@@ -1,7 +1,10 @@
 local M = {}
 
 ---@class NetrwPreview.Config
----@field preview_width integer Preview window width percentage (default: 60)
+---@field preview_width integer Preview window width percentage for vertical splits (default: 60)
+---@field preview_height integer Preview window height percentage for horizontal splits (default: 60)
+---@field preview_layout "vertical"|"horizontal" Layout orientation of preview window (default: "vertical")
+---@field preview_side "left"|"right"|"above"|"below" Side to open preview window (default: "right")
 ---@field preview_enabled boolean Enable preview by default
 ---@field auto_open_netrw boolean Auto-open netrw when starting with no files (default: false)
 ---@field mappings NetrwPreview.MappingConfig Custom key mappings
@@ -24,6 +27,9 @@ local M = {}
 ---@type NetrwPreview.Config
 M.defaults = {
   preview_width = 60,
+  preview_height = 60,
+  preview_layout = "vertical",
+  preview_side = "right",
   preview_enabled = false,
   auto_open_netrw = false,
   mappings = {

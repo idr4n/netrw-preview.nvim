@@ -97,7 +97,7 @@ local function split_lines_with_newlines(lines)
   return result
 end
 
----Open the preview window with configured width
+---Open the preview window with configured layout and size
 local function open_preview_window()
   if not preview_buf or not vim.api.nvim_buf_is_valid(preview_buf) then
     return
@@ -114,15 +114,37 @@ local function open_preview_window()
     end
   end
 
-  vim.cmd("vsplit")
+  -- Use configured preview layout and side
+  local config = get_config()
+  if config.preview_layout == "horizontal" then
+    if config.preview_side == "above" then
+      vim.cmd("leftabove split")
+    else
+      vim.cmd("rightbelow split")
+    end
+  else
+    if config.preview_side == "left" then
+      vim.cmd("leftabove vsplit")
+    else
+      vim.cmd("rightbelow vsplit")
+    end
+  end
+
   local preview_win = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_buf(preview_win, preview_buf)
 
-  -- Use configured preview width
-  local config = get_config()
-  local total_width = vim.o.columns
-  local preview_win_width = math.floor(total_width * (config.preview_width / 100))
-  vim.api.nvim_win_set_width(preview_win, preview_win_width)
+  -- Set window size based on layout
+  if config.preview_layout == "horizontal" then
+    -- Use height for horizontal splits
+    local total_height = vim.o.lines
+    local preview_win_height = math.floor(total_height * (config.preview_height / 100))
+    vim.api.nvim_win_set_height(preview_win, preview_win_height)
+  else
+    -- Use width for vertical splits
+    local total_width = vim.o.columns
+    local preview_win_width = math.floor(total_width * (config.preview_width / 100))
+    vim.api.nvim_win_set_width(preview_win, preview_win_width)
+  end
 
   vim.cmd("wincmd p") -- Return focus to netrw
   vim.api.nvim_win_set_cursor(netrw_win, cursor_pos)
