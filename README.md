@@ -2,6 +2,8 @@
 
 A powerful Neovim plugin that enhances the built-in **Netrw file explorer with live preview** functionality and improved keybindings.
 
+https://github.com/user-attachments/assets/b1955ed9-7570-4434-853c-56260ab770ac
+
 ## Motivation
 
 The main motivation to write this plugin was to add a **live preview** to Netrw similar to `oil.nvim` or `mini.files`. 
