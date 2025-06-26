@@ -97,61 +97,95 @@ local function split_lines_with_newlines(lines)
   return result
 end
 
----Open the preview window with configured layout and size
+-- Store the original buffer in target window before preview
+local original_buffer_in_target_window = nil
+
+-- Store whether we created a split or reused a window
+local preview_created_split = false
+
+---Open the preview window with configured layout and size, and smart window reuse
 local function open_preview_window()
   if not preview_buf or not vim.api.nvim_buf_is_valid(preview_buf) then
     return
   end
 
-  local netrw_win = vim.api.nvim_get_current_win()
-  local cursor_pos = vim.api.nvim_win_get_cursor(netrw_win)
-  ---@type integer[]
+  local current_win = vim.api.nvim_get_current_win()
+  local cursor_pos = vim.api.nvim_win_get_cursor(current_win)
   local wins = vim.api.nvim_list_wins()
+  local config = get_config()
 
+  -- Check if preview is already open somewhere
   for _, win in ipairs(wins) do
-    if vim.api.nvim_win_get_buf(win) == preview_buf then
+    if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == preview_buf then
       return -- Preview window already open
     end
   end
 
-  -- Use configured preview layout and side
-  local config = get_config()
-  if config.preview_layout == "horizontal" then
-    if config.preview_side == "above" then
-      vim.cmd("leftabove split")
+  local num_windows = #wins
+
+  if num_windows == 1 then
+    -- Only one window: create new split
+    preview_created_split = true -- Track that we created a split
+    original_buffer_in_target_window = nil -- No original buffer to restore
+
+    if config.preview_layout == "horizontal" then
+      if config.preview_side == "below" then
+        vim.cmd("leftabove split")
+      else
+        vim.cmd("rightbelow split")
+      end
     else
-      vim.cmd("rightbelow split")
+      if config.preview_side == "left" then
+        vim.cmd("leftabove vsplit")
+      else
+        vim.cmd("rightbelow vsplit")
+      end
     end
-  else
-    if config.preview_side == "left" then
-      vim.cmd("leftabove vsplit")
+
+    local preview_win = vim.api.nvim_get_current_win()
+    vim.api.nvim_win_set_buf(preview_win, preview_buf)
+
+    -- Set window size...
+    if config.preview_layout == "horizontal" then
+      local total_height = vim.o.lines
+      local preview_win_height = math.floor(total_height * (config.preview_height / 100))
+      vim.api.nvim_win_set_height(preview_win, preview_win_height)
     else
-      vim.cmd("rightbelow vsplit")
+      local total_width = vim.o.columns
+      local preview_win_width = math.floor(total_width * (config.preview_width / 100))
+      vim.api.nvim_win_set_width(preview_win, preview_win_width)
+    end
+
+    vim.cmd("wincmd p") -- Return focus to netrw
+  else
+    -- Multiple windows: reuse existing window
+    preview_created_split = false -- Track that we reused a window
+
+    local preview_win = nil
+    for _, win in ipairs(wins) do
+      if win ~= current_win then
+        preview_win = win
+        break
+      end
+    end
+
+    if preview_win then
+      -- Store the original buffer in target window
+      original_buffer_in_target_window = vim.api.nvim_win_get_buf(preview_win)
+      vim.api.nvim_win_set_buf(preview_win, preview_buf)
+      vim.api.nvim_set_current_win(current_win)
     end
   end
 
-  local preview_win = vim.api.nvim_get_current_win()
-  vim.api.nvim_win_set_buf(preview_win, preview_buf)
-
-  -- Set window size based on layout
-  if config.preview_layout == "horizontal" then
-    -- Use height for horizontal splits
-    local total_height = vim.o.lines
-    local preview_win_height = math.floor(total_height * (config.preview_height / 100))
-    vim.api.nvim_win_set_height(preview_win, preview_win_height)
-  else
-    -- Use width for vertical splits
-    local total_width = vim.o.columns
-    local preview_win_width = math.floor(total_width * (config.preview_width / 100))
-    vim.api.nvim_win_set_width(preview_win, preview_win_width)
-  end
-
-  vim.cmd("wincmd p") -- Return focus to netrw
-  vim.api.nvim_win_set_cursor(netrw_win, cursor_pos)
+  vim.api.nvim_win_set_cursor(current_win, cursor_pos)
 end
 
 ---Update the preview content based on cursor position in netrw
 local function update_preview()
+  if not preview_enabled then
+    return
+  end
+
   if not preview_buf or not vim.api.nvim_buf_is_valid(preview_buf) then
     return
   end
@@ -327,19 +361,39 @@ function M.disable_preview(opts)
   -- Clear autocommands for this group only
   vim.api.nvim_clear_autocmds({ group = augroup })
 
-  -- Close the preview window if open
-  if preview_buf and vim.api.nvim_buf_is_valid(preview_buf) then
-    local winid = vim.fn.bufwinid(preview_buf)
-    if winid ~= -1 then
-      vim.api.nvim_win_close(winid, false)
-    end
+  local wins = vim.api.nvim_list_wins()
 
-    -- Delete the buffer if requested in options
-    if opts.delete_buffer then
-      vim.bo[preview_buf].buflisted = false
-      vim.api.nvim_buf_delete(preview_buf, { unload = true })
-      preview_buf = nil
+  if preview_created_split then
+    -- Single window mode: close the split entirely
+    for _, win in ipairs(wins) do
+      if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == preview_buf then
+        vim.api.nvim_win_close(win, false)
+        break
+      end
     end
+  else
+    -- Multiple window mode: restore original buffer
+    for _, win in ipairs(wins) do
+      if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == preview_buf then
+        if original_buffer_in_target_window and vim.api.nvim_buf_is_valid(original_buffer_in_target_window) then
+          vim.api.nvim_win_set_buf(win, original_buffer_in_target_window)
+        else
+          local empty_buf = vim.api.nvim_create_buf(true, false)
+          vim.api.nvim_win_set_buf(win, empty_buf)
+        end
+        break
+      end
+    end
+  end
+
+  -- Reset state
+  preview_created_split = false
+  original_buffer_in_target_window = nil
+
+  if opts.delete_buffer and preview_buf and vim.api.nvim_buf_is_valid(preview_buf) then
+    vim.bo[preview_buf].buflisted = false
+    vim.api.nvim_buf_delete(preview_buf, { unload = true })
+    preview_buf = nil
   end
 end
 
