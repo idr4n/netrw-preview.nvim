@@ -26,7 +26,7 @@ vim.api.nvim_create_user_command("NetrwRevealFile", function(opts)
   local file_path = opts.args ~= "" and opts.args or vim.fn.expand("%:p")
   require("netrw-preview").reveal_file(file_path)
 end, {
-  desc = "Reveal specified file in netrw",
+  desc = "Reveal specified directory or file in netrw",
   nargs = "?",
   complete = "file",
 })

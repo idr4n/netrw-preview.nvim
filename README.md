@@ -131,7 +131,7 @@ require("netrw-preview").setup({
 
 ### 🔧 Flexible Key Mappings
 
-All mappings now support both single keys and multiple keys for the same action:
+All mappings support both single keys and multiple keys for the same action:
 
 ```lua
 require("netrw-preview").setup({
@@ -224,14 +224,14 @@ This creates intuitive buffer navigation when jumping between files via netrw.
 ## 📝 Commands
 
 
-| Command                   | Description                              |
-| ---------                 | -------------                            |
-| `:NetrwReveal`            | Reveal current file in netrw             |
-| `:NetrwLastBuffer`        | Smart alternate buffer with netrw reveal |
-| `:NetrwPreviewToggle`     | Toggle preview window                    |
-| `:NetrwPreviewEnable`     | Enable preview                           |
-| `:NetrwPreviewDisable`    | Disable preview                          |
-| `:NetrwRevealFile [path]` | Reveal specified file in netrw           |
+| Command                   | Description                                      |
+| ---------                 | -------------                                    |
+| `:NetrwReveal`            | Reveal current file in netrw                     |
+| `:NetrwLastBuffer`        | Smart alternate buffer with netrw reveal         |
+| `:NetrwPreviewToggle`     | Toggle preview window                            |
+| `:NetrwPreviewEnable`     | Enable preview                                   |
+| `:NetrwPreviewDisable`    | Disable preview                                  |
+| `:NetrwRevealFile [path]` | Reveal specified file or open directory in netrw |
 
 
 ### Commands usage
@@ -243,6 +243,27 @@ vim.keymap.set("n", ",,", "<cmd>NetrwReveal<cr>", { desc = "Open Netrw - Reveal 
 vim.keymap.set("n", "ga", "<cmd>NetrwLastBuffer<cr>", { desc = "Go to alternate buffer (with netrw reveal)" })
 ```
 
+**NetrwRevealFile Examples:**
+
+- Reveal current file (if no argument provided)
+
+    `:NetrwRevealFile`
+
+- Reveal specific file
+
+    `:NetrwRevealFile /path/to/file.txt`
+
+- Open directory in netrw
+
+    `:NetrwRevealFile /path/to/directory`
+
+    `:NetrwRevealFile ~/projects`
+
+- Works with relative paths
+
+    `:NetrwRevealFile ./lua/config/init.lua`
+
+    `:NetrwRevealFile ../docs`
 
 **NetrwLastBuffer Logic:**
 
@@ -265,9 +286,12 @@ netrw_preview.enable_preview()
 netrw_preview.disable_preview({ delete_buffer = true })
 netrw_preview.toggle_preview()
 
--- File revelation
-netrw_preview.reveal()                     -- Reveal current file
-netrw_preview.reveal_file("/path/to/file") -- Reveal specific file while inside Netrw
+-- File/directory revelation
+netrw_preview.reveal()                           -- Reveal current file
+netrw_preview.reveal_file("/path/to/file.txt")   -- Reveal specific file
+netrw_preview.reveal_file("/path/to/directory")  -- Open specific directory
+netrw_preview.reveal_file("~/projects")          -- Works with tilde expansion
+netrw_preview.reveal_file("./src")               -- Works with relative paths
 ```
 
 

@@ -51,32 +51,70 @@ function M.NetrwReveal()
   vim.cmd.normal("zz")
 end
 
----Reveal a specific file in netrw
----@param file_path string Path to the file to reveal
-function M.RevealInNetrw(file_path)
+---Reveal a specific file or directory in netrw
+---@param path? string Path to the file or directory to reveal (defaults to current file)
+function M.RevealInNetrw(path)
+  -- If no path provided, use current file behavior
+  if not path or path == "" then
+    if vim.bo.filetype ~= "netrw" then
+      M.NetrwReveal()
+    end
+    return
+  end
+
+  -- Expand and normalize the path
+  path = vim.fn.fnamemodify(path, ":p")
+
+  -- Check if path exists
+  if not vim.fn.filereadable(path) and not vim.fn.isdirectory(path) then
+    vim.notify("Path does not exist: " .. path, vim.log.levels.WARN)
+    return
+  end
+
+  local target_dir
+  local target_file
+
+  if vim.fn.isdirectory(path) == 1 then
+    -- It's a directory - just open netrw there
+    target_dir = path
+    target_file = nil
+  else
+    -- It's a file - open netrw in containing directory and focus on file
+    target_dir = vim.fn.fnamemodify(path, ":h")
+    target_file = vim.fn.fnamemodify(path, ":t")
+  end
+
+  -- If not in netrw, capture buffer info and open netrw in target directory
   if vim.bo.filetype ~= "netrw" then
-    M.NetrwReveal()
-    return
+    local alt_bufnr = vim.fn.bufnr("#")
+
+    -- Capture buffer info like NetrwReveal does
+    if alt_bufnr ~= -1 and vim.api.nvim_buf_is_valid(alt_bufnr) and vim.bo[alt_bufnr].buflisted then
+      M.alt_buffer = alt_bufnr
+    else
+      M.alt_buffer = nil
+    end
+
+    M.current_bufnr = vim.fn.bufnr()
   end
 
-  if not vim.fn.filereadable(file_path) then
-    return
-  end
+  -- Open netrw in target directory
+  vim.cmd("silent Explore " .. vim.fn.fnameescape(target_dir))
 
-  local filename = vim.fn.fnamemodify(file_path, ":t")
+  if target_file then
+    local ok = pcall(function()
+      vim.fn.setreg("/", target_file)
+      vim.cmd("silent normal! n")
+    end)
 
-  local ok = pcall(function()
-    vim.fn.setreg("/", filename)
-    vim.cmd("silent normal! n")
-  end)
+    if not ok then
+      vim.cmd("silent nohlsearch")
+      return
+    end
 
-  if not ok then
     vim.cmd("silent nohlsearch")
-    return
+    vim.cmd("normal! zz")
   end
-
-  vim.cmd("silent nohlsearch")
-  vim.cmd("normal! zz")
 end
 
 function M.NetrwLastBuffer()
@@ -99,7 +137,7 @@ function M.NetrwLastBuffer()
 
     -- If we switched TO netrw and came FROM a file, reveal that file
     if vim.bo.filetype == "netrw" and previous_file ~= "" then
-      require("netrw-preview.utils").RevealInNetrw(previous_file)
+      M.RevealInNetrw(previous_file)
     end
   end
 end
