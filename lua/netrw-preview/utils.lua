@@ -11,6 +11,7 @@ M.alt_buffer = nil
 ---Opens netrw in the directory of the current file and highlights it
 ---@param use_lexplore? boolean Whether to use Lexplore instead of Explore (default: false)
 function M.NetrwReveal(use_lexplore)
+  vim.g.netrw_chgwin = -1
   use_lexplore = use_lexplore or false
 
   local alt_bufnr = vim.fn.bufnr("#")
@@ -76,6 +77,8 @@ function M.RevealInNetrw(path, use_lexplore)
     end
     return
   end
+
+  vim.g.netrw_chgwin = -1
 
   -- Expand and normalize the path
   path = vim.fn.fnamemodify(path, ":p")
