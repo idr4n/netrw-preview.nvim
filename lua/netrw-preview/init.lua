@@ -12,6 +12,36 @@ function M.setup(opts)
   -- Create autocommand group
   local augroup = vim.api.nvim_create_augroup("NetrwPreview", { clear = true })
 
+  -- Global autocmd for tracking buffer context and fixing netrw chgwin issue
+  vim.api.nvim_create_autocmd("BufEnter", {
+    group = augroup,
+    pattern = "*",
+    callback = function()
+      if vim.bo.filetype == "netrw" then
+        -- Auto-fix netrw chgwin issue
+        local chgwin = vim.g.netrw_chgwin or -1
+        if chgwin > 0 then
+          local wins = vim.api.nvim_list_wins()
+          if chgwin > #wins or not vim.api.nvim_win_is_valid(chgwin) then
+            vim.g.netrw_chgwin = -1
+          end
+        end
+
+        -- Track buffer context
+        local utils = require("netrw-preview.utils")
+        local cur_buf = vim.fn.bufnr("#")
+
+        -- Check if alternate buffer exists and is valid
+        if cur_buf ~= -1 and vim.api.nvim_buf_is_valid(cur_buf) and vim.bo[cur_buf].buflisted then
+          utils.current_bufnr = cur_buf
+        else
+          utils.current_bufnr = nil
+        end
+      end
+    end,
+    desc = "Fix netrw chgwin issue and track buffer context",
+  })
+
   -- Setup netrw mappings
   vim.api.nvim_create_autocmd("FileType", {
     group = augroup,
