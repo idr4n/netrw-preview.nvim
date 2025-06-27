@@ -224,19 +224,21 @@ This creates intuitive buffer navigation when jumping between files via netrw.
 ## 📝 Commands
 
 
-| Command                   | Description                                      |
-| ---------                 | -------------                                    |
-| `:NetrwReveal`            | Reveal current file in netrw                     |
-| `:NetrwLastBuffer`        | Smart alternate buffer with netrw reveal         |
-| `:NetrwPreviewToggle`     | Toggle preview window                            |
-| `:NetrwPreviewEnable`     | Enable preview                                   |
-| `:NetrwPreviewDisable`    | Disable preview                                  |
-| `:NetrwRevealFile [path]` | Reveal specified file or open directory in netrw |
+| Command                      | Description                                                 |
+| ---------                    | -------------                                               |
+| `:NetrwReveal`               | Reveal current file in netrw                                |
+| `:NetrwRevealLex`            | Reveal current file in netrw (Lexplore)                     |
+| `:NetrwLastBuffer`           | Smart alternate buffer with netrw reveal                    |
+| `:NetrwPreviewToggle`        | Toggle preview window                                       |
+| `:NetrwPreviewEnable`        | Enable preview                                              |
+| `:NetrwPreviewDisable`       | Disable preview                                             |
+| `:NetrwRevealFile [path]`    | Reveal specified file or open directory in netrw            |
+| `:NetrwRevealFileLex [path]` | Reveal specified file or open directory in netrw (Lexplore) |
 
 
 ### Commands usage
 
-`NetrwReveal` and `NetrwLastBuffer` can be mapped globally as:
+`NetrwReveal` (`NetrwRevealLex`) and `NetrwLastBuffer` can be mapped globally as:
 
 ```lua
 vim.keymap.set("n", ",,", "<cmd>NetrwReveal<cr>", { desc = "Open Netrw - Reveal current file" })
@@ -287,11 +289,13 @@ netrw_preview.disable_preview({ delete_buffer = true })
 netrw_preview.toggle_preview()
 
 -- File/directory revelation
-netrw_preview.reveal()                           -- Reveal current file
-netrw_preview.reveal_file("/path/to/file.txt")   -- Reveal specific file
-netrw_preview.reveal_file("/path/to/directory")  -- Open specific directory
-netrw_preview.reveal_file("~/projects")          -- Works with tilde expansion
-netrw_preview.reveal_file("./src")               -- Works with relative paths
+netrw_preview.reveal()                             -- Reveal current file
+netrw_preview.reveal_lex()                         -- Reveal current file (Lexplore)
+netrw_preview.reveal_file("/path/to/file.txt")     -- Reveal specific file
+netrw_preview.reveal_file_lex("/path/to/file.txt") -- Reveal specific file (Lexplore)
+netrw_preview.reveal_file("/path/to/directory")    -- Open specific directory
+netrw_preview.reveal_file("~/projects")            -- Works with tilde expansion
+netrw_preview.reveal_file("./src")                 -- Works with relative paths
 ```
 
 

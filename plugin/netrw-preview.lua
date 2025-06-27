@@ -31,6 +31,19 @@ end, {
   complete = "file",
 })
 
+vim.api.nvim_create_user_command("NetrwRevealLex", function()
+  require("netrw-preview").reveal_lex()
+end, { desc = "Reveal current file in Lexplore" })
+
+vim.api.nvim_create_user_command("NetrwRevealFileLex", function(opts)
+  local file_path = opts.args ~= "" and opts.args or vim.fn.expand("%:p")
+  require("netrw-preview").reveal_file_lex(file_path)
+end, {
+  desc = "Reveal specified directory or file in Lexplore",
+  nargs = "?",
+  complete = "file",
+})
+
 vim.api.nvim_create_user_command("NetrwLastBuffer", function()
   require("netrw-preview.utils").NetrwLastBuffer()
 end, { desc = "Go to alternate buffer (with netrw reveal)" })

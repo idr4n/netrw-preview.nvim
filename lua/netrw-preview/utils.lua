@@ -9,7 +9,10 @@ M.alt_buffer = nil
 
 ---Reveal current file in netrw file explorer
 ---Opens netrw in the directory of the current file and highlights it
-function M.NetrwReveal()
+---@param use_lexplore? boolean Whether to use Lexplore instead of Explore (default: false)
+function M.NetrwReveal(use_lexplore)
+  use_lexplore = use_lexplore or false
+
   local alt_bufnr = vim.fn.bufnr("#")
 
   -- Check if alternate buffer exists and is valid
@@ -25,7 +28,11 @@ function M.NetrwReveal()
 
   local current_file = vim.fn.expand("%:p")
   if current_file == "" then
-    vim.cmd("silent Explore")
+    if use_lexplore then
+      vim.cmd("silent Lexplore")
+    else
+      vim.cmd("silent Explore")
+    end
     return
   end
 
@@ -36,7 +43,12 @@ function M.NetrwReveal()
 
   -- Use silent commands to prevent history pollution
   vim.fn.setreg("/", filename)
-  vim.cmd("silent Explore " .. filepath)
+
+  if use_lexplore then
+    vim.cmd("silent Lexplore " .. vim.fn.fnameescape(filepath))
+  else
+    vim.cmd("silent Explore " .. vim.fn.fnameescape(filepath))
+  end
 
   local ok = pcall(function()
     vim.cmd("silent normal! n")
@@ -53,11 +65,14 @@ end
 
 ---Reveal a specific file or directory in netrw
 ---@param path? string Path to the file or directory to reveal (defaults to current file)
-function M.RevealInNetrw(path)
+---@param use_lexplore? boolean Whether to use Lexplore instead of Explore (default: false)
+function M.RevealInNetrw(path, use_lexplore)
+  use_lexplore = use_lexplore or false
+
   -- If no path provided, use current file behavior
   if not path or path == "" then
     if vim.bo.filetype ~= "netrw" then
-      M.NetrwReveal()
+      M.NetrwReveal(use_lexplore)
     end
     return
   end
@@ -75,11 +90,9 @@ function M.RevealInNetrw(path)
   local target_file
 
   if vim.fn.isdirectory(path) == 1 then
-    -- It's a directory - just open netrw there
     target_dir = path
     target_file = nil
   else
-    -- It's a file - open netrw in containing directory and focus on file
     target_dir = vim.fn.fnamemodify(path, ":h")
     target_file = vim.fn.fnamemodify(path, ":t")
   end
@@ -98,8 +111,12 @@ function M.RevealInNetrw(path)
     M.current_bufnr = vim.fn.bufnr()
   end
 
-  -- Open netrw in target directory
-  vim.cmd("silent Explore " .. vim.fn.fnameescape(target_dir))
+  -- Open netrw in target directory with Lexplore or Explore
+  if use_lexplore then
+    vim.cmd("silent Lexplore " .. vim.fn.fnameescape(target_dir))
+  else
+    vim.cmd("silent Explore " .. vim.fn.fnameescape(target_dir))
+  end
 
   if target_file then
     local ok = pcall(function()

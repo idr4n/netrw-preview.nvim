@@ -94,10 +94,21 @@ function M.reveal()
   require("netrw-preview.utils").NetrwReveal()
 end
 
+---Reveal current file in Lexplore
+function M.reveal_lex()
+  require("netrw-preview.utils").NetrwReveal(true)
+end
+
 ---Reveal specified file in netrw
 ---@param file_path string Path to the file to reveal
 function M.reveal_file(file_path)
   require("netrw-preview.utils").RevealInNetrw(file_path)
+end
+
+---Reveal specified file in Lexplore
+---@param file_path string Path to the file to reveal
+function M.reveal_file_lex(file_path)
+  require("netrw-preview.utils").RevealInNetrw(file_path, true)
 end
 
 return M
