@@ -37,6 +37,7 @@ Along the way, I decided to also include other enhancements to improve my own wo
   ft = "netrw",
   keys = {
     { ",,", "<cmd>NetrwReveal<cr>", desc = "Open Netrw - Reveal" },
+    { ",l", "<cmd>NetrwRevealLex<cr>", desc = "Open Netrw (Lex) - Reveal" },
     { "ga", "<cmd>NetrwLastBuffer<cr>", desc = "Go to alternate buffer (with netrw reveal)" },
   },
   opts = {}
