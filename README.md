@@ -2,6 +2,9 @@
 
 A powerful Neovim plugin that enhances the built-in **Netrw file explorer with live preview** functionality and improved keybindings.
 
+> [!IMPORTANT]
+> **Note**: this plugin is in early development and is going through a testing stage, so expect breaking changes.
+
 https://github.com/user-attachments/assets/b1955ed9-7570-4434-853c-56260ab770ac
 
 ## Motivation
