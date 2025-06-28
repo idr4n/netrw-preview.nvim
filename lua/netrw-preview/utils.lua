@@ -22,10 +22,32 @@ function M.get_relative_path()
   return vim.fn.fnamemodify(absolute_path, ":.")
 end
 
+---Close all unmodified "No Name" buffers
+local function close_empty_buffers()
+  local buffers = vim.api.nvim_list_bufs()
+
+  for _, bufnr in ipairs(buffers) do
+    -- Check if buffer is valid and loaded
+    if vim.api.nvim_buf_is_valid(bufnr) and vim.api.nvim_buf_is_loaded(bufnr) then
+      -- Check if buffer has no name and is not modified
+      local bufname = vim.api.nvim_buf_get_name(bufnr)
+      local is_modified = vim.bo[bufnr].modified
+
+      if bufname == "" and not is_modified then
+        vim.api.nvim_buf_delete(bufnr, {})
+      end
+    end
+  end
+end
+
 ---Reveal current file in netrw file explorer
 ---Opens netrw in the directory of the current file and highlights it
 ---@param use_lexplore? boolean Whether to use Lexplore instead of Explore (default: false)
 function M.NetrwReveal(use_lexplore)
+  vim.schedule(function()
+    close_empty_buffers()
+  end)
+
   vim.g.netrw_chgwin = -1
   use_lexplore = use_lexplore or false
 
@@ -92,6 +114,10 @@ function M.RevealInNetrw(path, use_lexplore)
     end
     return
   end
+
+  vim.schedule(function()
+    close_empty_buffers()
+  end)
 
   -- Expand and normalize the path
   path = vim.fn.fnamemodify(path, ":p")
@@ -237,6 +263,10 @@ end
 ---Close netrw and return to previous buffer
 ---@return nil
 function M.close_netrw()
+  vim.schedule(function()
+    close_empty_buffers()
+  end)
+
   preview.disable_preview({ delete_buffer = true })
 
   vim.cmd("bdelete")
