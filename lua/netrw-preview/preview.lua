@@ -84,6 +84,48 @@ local function split_lines_with_newlines(lines)
   return result
 end
 
+-- Checks if a window is suitable for preview
+---@param win integer Window handle/ID
+---@return boolean Whether the window is suitable for preview
+local function is_suitable_window(win)
+  if not vim.api.nvim_win_is_valid(win) then
+    return false
+  end
+
+  -- Skip floating windows (notifications, popups, etc.)
+  local win_config = vim.api.nvim_win_get_config(win)
+  if win_config.relative ~= "" then
+    return false
+  end
+
+  -- Check buffer type of the window
+  local buf = vim.api.nvim_win_get_buf(win)
+  if not vim.api.nvim_buf_is_valid(buf) then
+    return false
+  end
+
+  local buftype = vim.bo[buf].buftype
+  -- Skip special buffer types
+  if
+    buftype == "nofile"
+    or buftype == "quickfix"
+    or buftype == "help"
+    or buftype == "terminal"
+    or buftype == "prompt"
+  then
+    return false
+  end
+
+  -- Skip very small windows (likely notifications)
+  local win_height = vim.api.nvim_win_get_height(win)
+  local win_width = vim.api.nvim_win_get_width(win)
+  if win_height < 10 or win_width < 20 then
+    return false
+  end
+
+  return true
+end
+
 -- Store the original buffer in target window before preview
 local original_buffer_in_target_window = nil
 
@@ -110,7 +152,14 @@ local function open_preview_window()
 
   local num_windows = #wins
 
-  if num_windows == 1 then
+  local num_suitable_windows = 0
+  for _, win in ipairs(wins) do
+    if is_suitable_window(win) then
+      num_suitable_windows = num_suitable_windows + 1
+    end
+  end
+
+  if num_windows == 1 or num_suitable_windows == 1 then
     -- Only one window: create new split
     preview_created_split = true -- Track that we created a split
     original_buffer_in_target_window = nil -- No original buffer to restore
@@ -132,7 +181,7 @@ local function open_preview_window()
     local preview_win = vim.api.nvim_get_current_win()
     vim.api.nvim_win_set_buf(preview_win, preview_buf)
 
-    -- Set window size...
+    -- Set window size
     if config.preview_layout == "horizontal" then
       local total_height = vim.o.lines
       local preview_win_height = math.floor(total_height * (config.preview_height / 100))
@@ -150,7 +199,7 @@ local function open_preview_window()
 
     local preview_win = nil
     for _, win in ipairs(wins) do
-      if win ~= current_win then
+      if win ~= current_win and is_suitable_window(win) then
         preview_win = win
         break
       end
