@@ -378,8 +378,7 @@ function M.disable_preview(opts)
   original_buffer_in_target_window = nil
 
   if opts.delete_buffer and preview_buf and vim.api.nvim_buf_is_valid(preview_buf) then
-    vim.bo[preview_buf].buflisted = false
-    vim.api.nvim_buf_delete(preview_buf, { unload = true })
+    vim.api.nvim_buf_delete(preview_buf, { force = true })
     preview_buf = nil
   end
 end
