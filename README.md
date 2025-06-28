@@ -39,8 +39,8 @@ Along the way, I decided to also include other enhancements to improve my own wo
   "yourusername/netrw-preview.nvim",
   ft = "netrw",
   keys = {
-    { ",,", "<cmd>NetrwReveal<cr>", desc = "Open Netrw - Reveal" },
-    { ",l", "<cmd>NetrwRevealLex<cr>", desc = "Open Netrw (Lex) - Reveal" },
+    { ",,", "<cmd>NetrwRevealToggle<cr>", desc = "Toggle Netrw - Reveal" },
+    { ",l", "<cmd>NetrwRevealLexToggle<cr>", desc = "Toggle Netrw (Lex) - Reveal" },
     { "ga", "<cmd>NetrwLastBuffer<cr>", desc = "Go to alternate buffer (with netrw reveal)" },
   },
   opts = {}
@@ -231,7 +231,9 @@ This creates intuitive buffer navigation when jumping between files via netrw.
 | Command                      | Description                                                 |
 | ---------                    | -------------                                               |
 | `:NetrwReveal`               | Reveal current file in netrw                                |
+| `:NetrwRevealToggle`         | Toggle NetrwReveal                                          |
 | `:NetrwRevealLex`            | Reveal current file in netrw (Lexplore)                     |
+| `:NetrwRevealLexToggle`      | Toggle NetrwRevealLex                                       |
 | `:NetrwLastBuffer`           | Smart alternate buffer with netrw reveal                    |
 | `:NetrwPreviewToggle`        | Toggle preview window                                       |
 | `:NetrwPreviewEnable`        | Enable preview                                              |
@@ -242,7 +244,7 @@ This creates intuitive buffer navigation when jumping between files via netrw.
 
 ### Commands usage
 
-`NetrwReveal` (`NetrwRevealLex`) and `NetrwLastBuffer` can be mapped globally as:
+`NetrwReveal`, `NetrwRevealLex` (and their toggle counterparts), and `NetrwLastBuffer` can be mapped globally as:
 
 ```lua
 vim.keymap.set("n", ",,", "<cmd>NetrwReveal<cr>", { desc = "Open Netrw - Reveal current file" })
@@ -350,13 +352,6 @@ require("netrw-preview").setup({
 Contributions are welcome! Please feel free to submit a pull request. For major changes or additional features, it is recommended to open a new discussion first before embarking in writing a full PR.
 
 **Note**: Netrw enhancements such as adding **file icons** or **displaying git status** are **not planned** to be added in this plugin.
-
-### Development Setup
-
-1. Clone the repository
-2. Make your changes
-3. Test with your Neovim configuration
-4. Submit a pull request
 
 ## 📄 License
 

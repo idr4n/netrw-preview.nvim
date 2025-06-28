@@ -102,4 +102,14 @@ function M.reveal_file_lex(file_path)
   require("netrw-preview.utils").RevealInNetrw(file_path, true)
 end
 
+---Toggle NetrwReveal (open netrw or close if already open)
+function M.reveal_file_toggle()
+  require("netrw-preview.utils").toggle_reveal()
+end
+
+---Toggle NetrwRevealLex (open Lexplore or close if already open)
+function M.reveal_file_lex_toggle()
+  require("netrw-preview.utils").toggle_reveal(true)
+end
+
 return M

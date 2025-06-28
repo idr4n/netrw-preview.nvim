@@ -40,6 +40,18 @@ local function close_empty_buffers()
   end
 end
 
+---Check if any netrw window is currently open
+---@return boolean True if netrw is open in any window
+local function is_netrw_open()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].filetype == "netrw" then
+      return true
+    end
+  end
+  return false
+end
+
 ---Reveal current file in netrw file explorer
 ---Opens netrw in the directory of the current file and highlights it
 ---@param use_lexplore? boolean Whether to use Lexplore instead of Explore (default: false)
@@ -269,16 +281,49 @@ function M.close_netrw()
 
   preview.disable_preview({ delete_buffer = true })
 
-  vim.cmd("bdelete")
+  local current_ft = vim.bo.filetype
 
-  if vim.api.nvim_buf_is_valid(M.current_bufnr or -1) then
-    vim.api.nvim_set_current_buf(M.current_bufnr)
+  if current_ft == "netrw" then
+    vim.cmd("bdelete")
+
+    if vim.api.nvim_buf_is_valid(M.current_bufnr or -1) then
+      vim.api.nvim_set_current_buf(M.current_bufnr)
+    end
+  else
+    -- We're NOT in netrw buffer (e.g., called from toggle)
+    local netrw_buffers = {}
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "netrw" then
+        table.insert(netrw_buffers, buf)
+      end
+    end
+
+    -- Close all netrw buffers
+    for _, buf in ipairs(netrw_buffers) do
+      vim.api.nvim_buf_delete(buf, { force = false })
+    end
   end
 
+  -- Set alternate buffer regardless of which path we took
   if M.alt_buffer and vim.api.nvim_buf_is_valid(M.alt_buffer) then
     vim.fn.setreg("#", M.alt_buffer)
   elseif M.current_bufnr and vim.api.nvim_buf_is_valid(M.current_bufnr) then
     vim.fn.setreg("#", M.current_bufnr)
+  end
+end
+
+---Toggle NetrwReveal or NetrwRevealLex (open netrw or close if already open)
+---@param lexplore? boolean Whether to use Lexplore instead of Explore (default: false)
+function M.toggle_reveal(lexplore)
+  lexplore = lexplore or false
+  if is_netrw_open() then
+    require("netrw-preview.utils").close_netrw()
+  else
+    if lexplore then
+      M.NetrwReveal(true)
+    else
+      M.NetrwReveal()
+    end
   end
 end
 
