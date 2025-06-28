@@ -18,15 +18,6 @@ function M.setup(opts)
     pattern = "*",
     callback = function()
       if vim.bo.filetype == "netrw" then
-        -- Auto-fix netrw chgwin issue
-        local chgwin = vim.g.netrw_chgwin or -1
-        if chgwin > 0 then
-          local wins = vim.api.nvim_list_wins()
-          if chgwin > #wins or not vim.api.nvim_win_is_valid(chgwin) then
-            vim.g.netrw_chgwin = -1
-          end
-        end
-
         -- Track buffer context
         local utils = require("netrw-preview.utils")
         local cur_buf = vim.fn.bufnr("#")

@@ -78,8 +78,6 @@ function M.RevealInNetrw(path, use_lexplore)
     return
   end
 
-  vim.g.netrw_chgwin = -1
-
   -- Expand and normalize the path
   path = vim.fn.fnamemodify(path, ":p")
 
