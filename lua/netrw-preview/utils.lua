@@ -9,6 +9,19 @@ M.current_bufnr = nil
 ---@type integer?
 M.alt_buffer = nil
 
+---Get the absolute path of the item under cursor in netrw
+---@return string Absolute path of the current item
+function M.get_absolute_path()
+  return vim.fn["netrw#Call"]("NetrwFile", vim.fn["netrw#Call"]("NetrwGetWord"))
+end
+
+---Get the relative path of the item under cursor in netrw
+---@return string Relative path of the current item
+function M.get_relative_path()
+  local absolute_path = M.get_absolute_path()
+  return vim.fn.fnamemodify(absolute_path, ":.")
+end
+
 ---Reveal current file in netrw file explorer
 ---Opens netrw in the directory of the current file and highlights it
 ---@param use_lexplore? boolean Whether to use Lexplore instead of Explore (default: false)
@@ -161,6 +174,81 @@ function M.NetrwLastBuffer()
     if vim.bo.filetype == "netrw" and previous_file ~= "" then
       M.RevealInNetrw(previous_file)
     end
+  end
+end
+
+---Check if the current netrw selection is a directory
+---@return boolean True if the current selection is a directory
+local function is_current_selection_directory()
+  local line = vim.api.nvim_get_current_line()
+  local name = line:gsub("%s+$", "") -- Trim trailing whitespace
+
+  -- Skip special entries
+  if name == "" or name == "." or name == ".." then
+    return true -- Treat as directory for navigation purposes
+  end
+
+  -- Check if line ends with "/" (netrw directory indicator)
+  if name:match("/$") then
+    return true
+  end
+
+  -- Get absolute path and check if it's a directory
+  local absolute_path = M.get_absolute_path()
+  return vim.fn.isdirectory(absolute_path) == 1
+end
+
+---Smart enter directory/file function
+---@return nil
+function M.smart_enter()
+  if is_current_selection_directory() then
+    vim.api.nvim_input("<CR>")
+  else
+    local selected_file_path = vim.fn.fnamemodify(M.get_absolute_path(), ":p")
+    local ok, current_file_path = pcall(vim.api.nvim_buf_get_name, M.current_bufnr)
+
+    -- It's a file, open it (disable preview first)
+    preview.disable_preview({ delete_buffer = true })
+    vim.api.nvim_input("<CR>")
+
+    if not ok then
+      return
+    end
+
+    -- preserve alternate buffer context
+    current_file_path = vim.fn.fnamemodify(current_file_path, ":p")
+
+    if selected_file_path == current_file_path then
+      if M.alt_buffer and vim.api.nvim_buf_is_valid(M.alt_buffer) then
+        vim.schedule(function()
+          vim.fn.setreg("#", M.alt_buffer)
+        end)
+      end
+    else
+      if M.current_bufnr and vim.api.nvim_buf_is_valid(M.current_bufnr) then
+        vim.schedule(function()
+          vim.fn.setreg("#", M.current_bufnr)
+        end)
+      end
+    end
+  end
+end
+
+---Close netrw and return to previous buffer
+---@return nil
+function M.close_netrw()
+  preview.disable_preview({ delete_buffer = true })
+
+  vim.cmd("bdelete")
+
+  if vim.api.nvim_buf_is_valid(M.current_bufnr or -1) then
+    vim.api.nvim_set_current_buf(M.current_bufnr)
+  end
+
+  if M.alt_buffer and vim.api.nvim_buf_is_valid(M.alt_buffer) then
+    vim.fn.setreg("#", M.alt_buffer)
+  elseif M.current_bufnr and vim.api.nvim_buf_is_valid(M.current_bufnr) then
+    vim.fn.setreg("#", M.current_bufnr)
   end
 end
 
