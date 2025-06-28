@@ -1,6 +1,8 @@
 ---@class NetrwPreview.Utils
 local M = {}
 
+local preview = require("netrw-preview.preview")
+
 -- These will be set from current buffer when netrw is opened
 ---@type integer?
 M.current_bufnr = nil
@@ -147,6 +149,8 @@ function M.NetrwLastBuffer()
   local previous_file = vim.fn.expand("%:p") -- Store current file before switching
 
   if current_filetype == "netrw" then
+    -- disable preview
+    preview.disable_preview({ delete_buffer = true })
     -- From netrw: just switch to alternate buffer (usually a regular file)
     vim.cmd("buffer #")
   else

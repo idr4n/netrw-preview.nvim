@@ -79,7 +79,8 @@ local function smart_enter()
     local selected_file_path = vim.fn.fnamemodify(get_absolute_path(), ":p")
     local ok, current_file_path = pcall(vim.api.nvim_buf_get_name, utils.current_bufnr)
 
-    -- It's a file, open it
+    -- It's a file, open it (disable preview first)
+    preview.disable_preview({ delete_buffer = true })
     vim.api.nvim_input("<CR>")
 
     if not ok then

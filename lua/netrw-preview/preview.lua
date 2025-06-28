@@ -14,19 +14,6 @@ local function get_config()
   return require("netrw-preview.config").options
 end
 
-vim.api.nvim_create_autocmd("BufWinLeave", {
-  group = augroup,
-  pattern = "*",
-  callback = function()
-    local buf = vim.api.nvim_get_current_buf()
-    if vim.bo[buf].filetype == "netrw" then
-      vim.schedule(function()
-        M.disable_preview()
-      end)
-    end
-  end,
-})
-
 ---Check if a file is binary by extension and content analysis
 ---@param filepath string Path to the file to check
 ---@return boolean True if file appears to be binary
