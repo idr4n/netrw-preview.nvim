@@ -240,14 +240,14 @@ end
 ---@return nil
 function M.smart_enter()
   if is_current_selection_directory() then
-    vim.api.nvim_input("<CR>")
+    vim.api.nvim_input("<Plug>NetrwLocalBrowseCheck")
   else
     local selected_file_path = vim.fn.fnamemodify(M.get_absolute_path(), ":p")
     local ok, current_file_path = pcall(vim.api.nvim_buf_get_name, M.current_bufnr)
 
     -- It's a file, open it (disable preview first)
     preview.disable_preview({ delete_buffer = true })
-    vim.api.nvim_input("<CR>")
+    vim.api.nvim_input("<Plug>NetrwLocalBrowseCheck")
 
     if not ok then
       return
