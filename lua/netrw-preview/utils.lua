@@ -9,9 +9,9 @@ M.current_bufnr = nil
 ---@type integer?
 M.alt_buffer = nil
 
--- Track netrw split state
----@type table<integer, boolean> Buffer number -> was opened in split
-M.netrw_split_state = {}
+-- Track netrw window split state
+---@type table<integer, boolean> Window ID -> was opened in split
+M.netrw_window_split_state = {}
 
 ---Get the absolute path of the item under cursor in netrw
 ---@return string Absolute path of the current item
@@ -109,10 +109,10 @@ function M.NetrwReveal(use_lexplore)
 
   -- Track window count after opening netrw and store split state
   local win_count_after = #vim.api.nvim_list_wins()
-  local netrw_buf = vim.api.nvim_get_current_buf()
+  local netrw_win = vim.api.nvim_get_current_win() -- Get the current window ID
 
   -- If window count increased, netrw was opened in a split
-  M.netrw_split_state[netrw_buf] = win_count_after > win_count_before
+  M.netrw_window_split_state[netrw_win] = win_count_after > win_count_before
 
   local ok = pcall(function()
     vim.cmd("silent normal! n")
@@ -191,10 +191,10 @@ function M.RevealInNetrw(path, use_lexplore)
 
   -- Track window count after opening netrw and store split state
   local win_count_after = #vim.api.nvim_list_wins()
-  local netrw_buf = vim.api.nvim_get_current_buf()
+  local netrw_win = vim.api.nvim_get_current_win() -- Get the current window ID
 
   -- If window count increased, netrw was opened in a split
-  M.netrw_split_state[netrw_buf] = win_count_after > win_count_before
+  M.netrw_window_split_state[netrw_win] = win_count_after > win_count_before
 
   if target_file then
     local ok = pcall(function()
@@ -308,48 +308,43 @@ function M.close_netrw()
   local current_ft = vim.bo.filetype
 
   if current_ft == "netrw" then
-    local netrw_buf = vim.api.nvim_get_current_buf()
-    local was_split = M.netrw_split_state[netrw_buf]
+    local current_win = vim.api.nvim_get_current_win()
+    local was_split = M.netrw_window_split_state[current_win]
 
     if was_split then
-      vim.cmd("bdelete")
-    end
-
-    if vim.api.nvim_buf_is_valid(M.current_bufnr or -1) then
-      vim.api.nvim_set_current_buf(M.current_bufnr)
+      -- Close just this window if it was opened as a split
+      vim.api.nvim_win_close(current_win, false)
+    else
+      -- Otherwise switch buffer in this window or delete buffer
+      if vim.api.nvim_buf_is_valid(M.current_bufnr or -1) then
+        vim.api.nvim_win_set_buf(current_win, M.current_bufnr)
+      else
+        vim.cmd("bdelete")
+      end
     end
 
     -- Clean up tracking info
-    M.netrw_split_state[netrw_buf] = nil
+    M.netrw_window_split_state[current_win] = nil
   else
     -- We're NOT in netrw buffer (e.g., called from toggle)
-    local netrw_buffers = {}
-    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      local buf = vim.api.nvim_win_get_buf(win)
       if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "netrw" then
-        table.insert(netrw_buffers, buf)
-      end
-    end
+        local was_split = M.netrw_window_split_state[win]
 
-    -- Close all netrw buffers
-    for _, buf in ipairs(netrw_buffers) do
-      local was_split = M.netrw_split_state[buf]
-
-      if was_split then
-        vim.api.nvim_buf_delete(buf, { force = false })
-      else
-        -- Find window with this buffer and quit it
-        for _, win in ipairs(vim.api.nvim_list_wins()) do
-          if vim.api.nvim_win_get_buf(win) == buf then
-            if vim.api.nvim_buf_is_valid(M.current_bufnr or -1) then
-              vim.api.nvim_win_set_buf(win, M.current_bufnr)
-            end
-            break
+        if was_split then
+          -- Close the window if it was opened as a split
+          vim.api.nvim_win_close(win, false)
+        else
+          -- Otherwise just switch the buffer in this window
+          if vim.api.nvim_buf_is_valid(M.current_bufnr or -1) then
+            vim.api.nvim_win_set_buf(win, M.current_bufnr)
           end
         end
-      end
 
-      -- Clean up tracking info
-      M.netrw_split_state[buf] = nil
+        -- Clean up tracking info
+        M.netrw_window_split_state[win] = nil
+      end
     end
   end
 
