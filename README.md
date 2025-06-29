@@ -114,7 +114,7 @@ require("netrw-preview").setup({
     parent_dir = "h",
 
     -- Enter directory/open file (smart enter)
-    enter_dir = "l",
+    enter_dir = { "l", "<cr>" },
 
     -- Insert relative path in command line
     insert_path = ".",
