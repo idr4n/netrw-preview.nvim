@@ -9,6 +9,10 @@ M.current_bufnr = nil
 ---@type integer?
 M.alt_buffer = nil
 
+-- Track netrw split state
+---@type table<integer, boolean> Buffer number -> was opened in split
+M.netrw_split_state = {}
+
 ---Get the absolute path of the item under cursor in netrw
 ---@return string Absolute path of the current item
 function M.get_absolute_path()
@@ -94,11 +98,21 @@ function M.NetrwReveal(use_lexplore)
   -- Use silent commands to prevent history pollution
   vim.fn.setreg("/", filename)
 
+  -- Track window count before opening netrw
+  local win_count_before = #vim.api.nvim_list_wins()
+
   if use_lexplore then
     vim.cmd("silent Lexplore " .. vim.fn.fnameescape(filepath))
   else
     vim.cmd("silent Explore " .. vim.fn.fnameescape(filepath))
   end
+
+  -- Track window count after opening netrw and store split state
+  local win_count_after = #vim.api.nvim_list_wins()
+  local netrw_buf = vim.api.nvim_get_current_buf()
+
+  -- If window count increased, netrw was opened in a split
+  M.netrw_split_state[netrw_buf] = win_count_after > win_count_before
 
   local ok = pcall(function()
     vim.cmd("silent normal! n")
@@ -165,12 +179,22 @@ function M.RevealInNetrw(path, use_lexplore)
     M.current_bufnr = vim.fn.bufnr()
   end
 
+  -- Track window count before opening netrw
+  local win_count_before = #vim.api.nvim_list_wins()
+
   -- Open netrw in target directory with Lexplore or Explore
   if use_lexplore then
     vim.cmd("silent Lexplore " .. vim.fn.fnameescape(target_dir))
   else
     vim.cmd("silent Explore " .. vim.fn.fnameescape(target_dir))
   end
+
+  -- Track window count after opening netrw and store split state
+  local win_count_after = #vim.api.nvim_list_wins()
+  local netrw_buf = vim.api.nvim_get_current_buf()
+
+  -- If window count increased, netrw was opened in a split
+  M.netrw_split_state[netrw_buf] = win_count_after > win_count_before
 
   if target_file then
     local ok = pcall(function()
@@ -284,7 +308,15 @@ function M.close_netrw()
   local current_ft = vim.bo.filetype
 
   if current_ft == "netrw" then
-    vim.cmd("bdelete")
+    local netrw_buf = vim.api.nvim_get_current_buf()
+    local was_split = M.netrw_split_state[netrw_buf]
+
+    if was_split then
+      vim.cmd("bdelete")
+    end
+
+    -- Clean up tracking info
+    M.netrw_split_state[netrw_buf] = nil
 
     if vim.api.nvim_buf_is_valid(M.current_bufnr or -1) then
       vim.api.nvim_set_current_buf(M.current_bufnr)
@@ -300,7 +332,24 @@ function M.close_netrw()
 
     -- Close all netrw buffers
     for _, buf in ipairs(netrw_buffers) do
-      vim.api.nvim_buf_delete(buf, { force = false })
+      local was_split = M.netrw_split_state[buf]
+
+      if was_split then
+        vim.api.nvim_buf_delete(buf, { force = false })
+      else
+        -- Find window with this buffer and quit it
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+          if vim.api.nvim_win_get_buf(win) == buf then
+            if vim.api.nvim_buf_is_valid(M.current_bufnr or -1) then
+              vim.api.nvim_win_set_buf(win, M.current_bufnr)
+            end
+            break
+          end
+        end
+      end
+
+      -- Clean up tracking info
+      M.netrw_split_state[buf] = nil
     end
   end
 
