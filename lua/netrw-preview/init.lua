@@ -12,7 +12,7 @@ function M.setup(opts)
   -- Create autocommand group
   local augroup = vim.api.nvim_create_augroup("NetrwPreview", { clear = true })
 
-  -- Global autocmd for tracking buffer context and fixing netrw chgwin issue
+  -- Global autocmd for tracking buffer context
   vim.api.nvim_create_autocmd("BufEnter", {
     group = augroup,
     pattern = "*",
@@ -25,8 +25,6 @@ function M.setup(opts)
         -- Check if alternate buffer exists and is valid
         if cur_buf ~= -1 and vim.api.nvim_buf_is_valid(cur_buf) and vim.bo[cur_buf].buflisted then
           utils.current_bufnr = cur_buf
-        else
-          utils.current_bufnr = nil
         end
       end
     end,

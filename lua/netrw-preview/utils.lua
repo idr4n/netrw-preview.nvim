@@ -315,12 +315,12 @@ function M.close_netrw()
       vim.cmd("bdelete")
     end
 
-    -- Clean up tracking info
-    M.netrw_split_state[netrw_buf] = nil
-
     if vim.api.nvim_buf_is_valid(M.current_bufnr or -1) then
       vim.api.nvim_set_current_buf(M.current_bufnr)
     end
+
+    -- Clean up tracking info
+    M.netrw_split_state[netrw_buf] = nil
   else
     -- We're NOT in netrw buffer (e.g., called from toggle)
     local netrw_buffers = {}
