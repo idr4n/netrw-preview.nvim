@@ -95,10 +95,6 @@ require("netrw-preview").setup({
   -- Enable preview by default when entering netrw
   preview_enabled = false,
 
-  -- Auto-open netrw on startup if no file is specified
-  -- Note: Requires no lazy loading to take effect
-  auto_open_netrw = false,
-
   -- Key mappings
   mappings = {
     -- Enable/disable all mappings
@@ -315,11 +311,23 @@ require("netrw-preview").setup({
   preview_width = 50,
 })
 
--- Create an autocmd to auto-reveal current file when opening netrw
+-- Create an autocmd to open netrw when launching nvim without arguments
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
     if vim.fn.argc() == 0 then
       require("netrw-preview").reveal()
+    end
+  end,
+})
+
+-- Create autocmd to open netrw when launching nvim with a directory as argument
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    if vim.fn.argc() == 1 then
+      local stat = vim.loop.fs_stat(vim.fn.argv(0))
+      if stat and stat.type == "directory" then
+        require("netrw-preview").reveal()
+      end
     end
   end,
 })

@@ -47,19 +47,6 @@ function M.setup(opts)
     end,
     desc = "Setup netrw preview mappings",
   })
-
-  -- Auto-open netrw on startup if no file is specified
-  if config.options.auto_open_netrw then
-    vim.api.nvim_create_autocmd("VimEnter", {
-      group = augroup,
-      callback = function()
-        if vim.fn.argc() == 0 and vim.fn.line2byte(vim.fn.line("$")) == -1 then
-          vim.cmd("silent! Explore")
-        end
-      end,
-      desc = "Auto-open netrw when starting with no files",
-    })
-  end
 end
 
 ---Enable preview functionality

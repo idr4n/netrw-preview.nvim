@@ -6,7 +6,6 @@ local M = {}
 ---@field preview_layout "vertical"|"horizontal" Layout orientation of preview window (default: "vertical")
 ---@field preview_side "left"|"right"|"above"|"below" Side to open preview window (default: "right")
 ---@field preview_enabled boolean Enable preview by default
----@field auto_open_netrw boolean Auto-open netrw when starting with no files (default: false)
 ---@field mappings NetrwPreview.MappingConfig Custom key mappings
 
 ---@class NetrwPreview.MappingConfig
@@ -31,7 +30,6 @@ M.defaults = {
   preview_layout = "vertical",
   preview_side = "right",
   preview_enabled = false,
-  auto_open_netrw = false,
   mappings = {
     enabled = true,
     toggle_preview = "p",
