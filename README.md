@@ -19,7 +19,7 @@ Along the way, I decided to also include other enhancements to improve my own wo
 
 - **Live Preview**: Real-time preview of files and directories as you navigate
 - **Flexible Preview Layout**: Choose vertical or horizontal splits with configurable positioning and sizing
-- **Smart Binary Detection**: Automatically detects and handles binary files with file size information
+- **Smart File Detection**: Automatically detects and handles non-text files with file size information
 - **Smart Enter Navigation**: Intelligent file/directory opening with proper alternate buffer handling
 - **Flexible Directory Shortcuts**: Create custom keybindings for frequently accessed directories
 - **Dynamic Path Support**: Use functions for context-aware directory navigation
@@ -337,21 +337,31 @@ require("netrw-preview").setup({
 })
 ```
 
-## 🔍 File Type Support
+## 🔍 File Type Preview Support
 
 ### Supported Preview Types
 
 - **Text files**: Full syntax highlighting
 - **Code files**: Language-specific highlighting
 - **Directories**: Sorted file listings (directories first)
-- **Binary and other files**: File size and type information
+- **Other files**: Non-text file size and type information
 - **Large file handling**: Auto-truncation of files >500 lines for better performance
 
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a pull request. For major changes or additional features, it is recommended to open a new discussion first before embarking in writing a full PR.
 
-**Note**: Netrw enhancements such as adding **file icons** or **displaying git status** are **not planned** to be added in this plugin.
+Here's how you can contribute:
+
+1. Fork the repository
+2. Create a feature branch (git checkout -b feature/amazing-feature)
+3. Commit your changes (git commit -m 'Add some amazing feature')
+4. Push to the branch (git push origin feature/amazing-feature)
+5. Open a Pull Request
+6. Please make sure to follow the existing code style.
+
+> [!INFO]
+> Netrw enhancements such as adding **file icons** or **displaying git status** are **not planned** to be added in this plugin.
 
 ## 📄 License
 
