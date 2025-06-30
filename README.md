@@ -301,9 +301,7 @@ netrw_preview.reveal_file("./src")                 -- Works with relative paths
 ```
 
 
-## 🎯 Examples
-
-### Auto-enable Preview
+## Auto-enable Preview
 
 ```lua
 require("netrw-preview").setup({
@@ -330,18 +328,6 @@ vim.api.nvim_create_autocmd("VimEnter", {
       end
     end
   end,
-})
-```
-
-### Custom Keybindings
-
-```lua
-require("netrw-preview").setup({
-  mappings = {
-    toggle_preview = { "p", "<Tab>" },
-    close_netrw = { "q", "<Esc>" },
-    yank_path = "yp",
-  }
 })
 ```
 
