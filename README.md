@@ -36,7 +36,7 @@ Along the way, I decided to also include other enhancements to improve my own wo
 
 ```lua
 {
-  "yourusername/netrw-preview.nvim",
+  "idr4n/netrw-preview.nvim",
   ft = "netrw",
   keys = {
     { ",,", "<cmd>NetrwRevealToggle<cr>", desc = "Toggle Netrw - Reveal" },
@@ -51,7 +51,7 @@ Along the way, I decided to also include other enhancements to improve my own wo
 
 ```lua
 use {
-  "yourusername/netrw-preview.nvim",
+  "idr4n/netrw-preview.nvim",
   config = function()
     require("netrw-preview").setup()
   end
@@ -61,7 +61,7 @@ use {
 #### Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-Plug 'yourusername/netrw-preview.nvim'
+Plug 'idr4n/netrw-preview.nvim'
 ```
 
 Then add to your `init.lua`:
@@ -360,7 +360,7 @@ Here's how you can contribute:
 5. Open a Pull Request
 6. Please make sure to follow the existing code style.
 
-> [!INFO]
+> [!NOTE]
 > Netrw enhancements such as adding **file icons** or **displaying git status** are **not planned** to be added in this plugin.
 
 ## 📄 License
