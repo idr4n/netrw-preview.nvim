@@ -10,12 +10,14 @@ local M = {}
 
 ---@class NetrwPreview.MappingConfig
 ---@field enabled boolean Enable default key mappings (default: true)
----@field toggle_preview string|string[]? Key(s) to toggle preview (default: "p", "", false or {} to disable)
----@field close_netrw string|string[]? Key(s) to close netrw (default: {"q", "gq", "<c-q>"}, "", false or {} to disable)
----@field parent_dir string|string[]? Key(s) to go to parent directory (default: "h", "", false or {} to disable)
----@field enter_dir string|string[]? Key(s) to enter directory (default: "l", "", false or {} to disable)
----@field insert_path string|string[]? Key(s) to insert relative path in command line (default: ".", "", false or {} to disable)
----@field yank_path string|string[]? Key(s) to yank absolute path (default: "Y", "", false or {} to disable)
+---@field toggle_preview string|string[]? Key(s) to toggle preview (default: "p"; "", false or {} to disable)
+---@field close_netrw string|string[]? Key(s) to close netrw (default: {"q", "gq", "<c-q>"}; "", false or {} to disable)
+---@field parent_dir string|string[]? Key(s) to go to parent directory (default: "h"; "", false or {} to disable)
+---@field enter_dir string|string[]? Key(s) to enter directory (default: "l", ""; false or {} to disable)
+---@field insert_path string|string[]? Key(s) to insert relative path in command line (default: "."; "", false or {} to disable)
+---@field yank_path string|string[]? Key(s) to yank absolute path (default: "Y"; "", false or {} to disable)
+---@field mark_files_visual string|string[]? Key(s) to mark selected files in visul mode (default: "m"; "", false or {} to disable)
+---@field unmark_files_visual string|string[]? Key(s) to unmark selected files in visul mode (default: "u"; "", false or {} to disable)
 ---@field directory_mappings NetrwPreview.DirectoryMapping[]? Custom directory shortcuts
 
 ---@class NetrwPreview.DirectoryMapping
@@ -38,6 +40,8 @@ M.defaults = {
     enter_dir = { "l", "<cr>" },
     insert_path = ".",
     yank_path = "Y",
+    mark_files_visual = "m",
+    unmark_files_visual = "u",
     directory_mappings = {
       { key = "~", path = "~", desc = "Home directory" },
     },

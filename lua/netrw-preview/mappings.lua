@@ -13,14 +13,16 @@ end
 
 ---Apply key mappings handling both individual keys and arrays of keys
 ---@param mapping_value string|string[]? The key or keys to map
----@param callback function The function to execute when key is pressed
+---@param callback string|function The rhs or function to execute when key is pressed
 ---@param opts table Options for vim.keymap.set
+---@param mode string|string[]? Mode "short-name", or a list thereof.
 ---@return nil
-local function apply_mapping(mapping_value, callback, opts)
+local function apply_mapping(mapping_value, callback, opts, mode)
+  mode = mode or "n"
   -- For a single string mapping
   if type(mapping_value) == "string" then
     if is_valid_mapping(mapping_value) then
-      vim.keymap.set("n", mapping_value, callback, opts)
+      vim.keymap.set(mode, mapping_value, callback, opts)
     end
     return
   end
@@ -29,7 +31,7 @@ local function apply_mapping(mapping_value, callback, opts)
   if type(mapping_value) == "table" then
     for _, key in ipairs(mapping_value) do
       if is_valid_mapping(key) then
-        vim.keymap.set("n", key, callback, opts)
+        vim.keymap.set(mode, key, callback, opts)
       end
     end
     return
@@ -140,6 +142,22 @@ function M.setup_buffer_mappings()
     buffer = true,
     desc = "Yank absolute path",
   })
+
+  -- Mark files in visual mode
+  apply_mapping(
+    config.mappings.mark_files_visual,
+    ":normal mf<cr>",
+    { buffer = true, desc = "Mark selected files in visual mode" },
+    "x"
+  )
+
+  -- Unmark files in visual mode
+  apply_mapping(
+    config.mappings.unmark_files_visual,
+    ":normal mF<cr>",
+    { buffer = true, desc = "Unmark selected files in visual mode" },
+    "x"
+  )
 end
 
 return M

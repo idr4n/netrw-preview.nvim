@@ -118,6 +118,12 @@ require("netrw-preview").setup({
     -- Yank absolute path to clipboard
     yank_path = "Y",
 
+    -- Mark files in visual mode
+    mark_files_visual = "m",
+
+    -- Unmark files in visual mode
+    unmark_files_visual = "u",
+
     -- Custom directory shortcuts
     directory_mappings = {
       { key = "~", path = "~", desc = "Home directory" },
