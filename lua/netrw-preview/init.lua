@@ -28,7 +28,7 @@ function M.setup(opts)
         end
       end
     end,
-    desc = "Fix netrw chgwin issue and track buffer context",
+    desc = "Track buffer context",
   })
 
   -- Setup netrw mappings
