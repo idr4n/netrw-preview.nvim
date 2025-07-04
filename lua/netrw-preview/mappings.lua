@@ -3,6 +3,7 @@ local M = {}
 
 local preview = require("netrw-preview.preview")
 local utils = require("netrw-preview.utils")
+local history = require("netrw-preview.history")
 
 ---Check if a mapping value is valid (not nil and not empty string)
 ---@param value any The mapping value to check
@@ -68,6 +69,7 @@ function M.setup_buffer_mappings()
 
   -- Parent directory mapping
   apply_mapping(config.mappings.parent_dir, function()
+    utils.add_path_to_history()
     vim.api.nvim_input("<Plug>NetrwBrowseUpDir")
   end, {
     buffer = true,
@@ -76,7 +78,9 @@ function M.setup_buffer_mappings()
   })
 
   -- Smart enter directory/file mapping
-  apply_mapping(config.mappings.enter_dir, utils.smart_enter, {
+  apply_mapping(config.mappings.enter_dir, function()
+    utils.smart_enter()
+  end, {
     buffer = true,
     silent = true,
     desc = "Enter directory/file",
@@ -111,7 +115,7 @@ function M.setup_buffer_mappings()
             final_path = vim.fn.expand(path)
           end
 
-          vim.cmd("Explore " .. vim.fn.fnameescape(final_path))
+          vim.cmd("NetrwRevealFile " .. vim.fn.fnameescape(final_path))
         end, {
           buffer = true,
           silent = true,
@@ -158,6 +162,30 @@ function M.setup_buffer_mappings()
     { buffer = true, desc = "Unmark selected files in visual mode" },
     "x"
   )
+
+  apply_mapping(config.mappings.go_back, history.go_back, {
+    buffer = true,
+    silent = true,
+    desc = "Go back in netrw history",
+  })
+
+  apply_mapping(config.mappings.go_forward, history.go_forward, {
+    buffer = true,
+    silent = true,
+    desc = "Go forward in netrw history",
+  })
+
+  apply_mapping(config.mappings.go_first, history.go_first, {
+    buffer = true,
+    silent = true,
+    desc = "Go to first entry in netrw history",
+  })
+
+  apply_mapping(config.mappings.go_last, history.go_last, {
+    buffer = true,
+    silent = true,
+    desc = "Go to last entry in netrw history",
+  })
 end
 
 return M

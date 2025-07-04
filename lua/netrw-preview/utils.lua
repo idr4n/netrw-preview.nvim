@@ -2,6 +2,7 @@
 local M = {}
 
 local preview = require("netrw-preview.preview")
+local history = require("netrw-preview.history")
 
 -- These will be set from current buffer when netrw is opened
 ---@type integer?
@@ -24,6 +25,15 @@ end
 function M.get_relative_path()
   local absolute_path = M.get_absolute_path()
   return vim.fn.fnamemodify(absolute_path, ":.")
+end
+
+--Add current path to history
+function M.add_path_to_history()
+  local win = vim.api.nvim_get_current_win()
+  local sel_path = vim.fn.fnamemodify(M.get_absolute_path(), ":p")
+  if sel_path then
+    history.add_path(win, sel_path)
+  end
 end
 
 ---Close all unmodified "No Name" buffers
@@ -95,8 +105,7 @@ function M.NetrwReveal(use_lexplore)
   local filename = vim.fn.expand("%:t")
   local filepath = vim.fn.expand("%:p:h")
 
-  -- Use silent commands to prevent history pollution
-  vim.fn.setreg("/", filename)
+  vim.fn.setreg("/", "^" .. filename .. "[*/@=|]*$")
 
   -- Track window count before opening netrw
   local win_count_before = #vim.api.nvim_list_wins()
@@ -114,6 +123,9 @@ function M.NetrwReveal(use_lexplore)
   -- If window count increased, netrw was opened in a split
   M.netrw_window_split_state[netrw_win] = win_count_after > win_count_before
 
+  -- clear history
+  history.clear_window_history(netrw_win)
+
   local ok = pcall(function()
     vim.cmd("silent normal! n")
   end)
@@ -130,8 +142,15 @@ end
 ---Reveal a specific file or directory in netrw
 ---@param path? string Path to the file or directory to reveal (defaults to current file)
 ---@param use_lexplore? boolean Whether to use Lexplore instead of Explore (default: false)
-function M.RevealInNetrw(path, use_lexplore)
+---@param reveal_dir? boolean Whether to reveal the directory going into it (default: false)
+---@param add_to_history? boolean Whether to add the current path to history (default: true)
+---@param ignore_win_state? boolean Whether to ignore window split state tracking (default: false)
+---@return nil
+function M.RevealInNetrw(path, use_lexplore, reveal_dir, add_to_history, ignore_win_state)
   use_lexplore = use_lexplore or false
+  reveal_dir = reveal_dir or false
+  add_to_history = add_to_history == nil and true or false
+  ignore_win_state = ignore_win_state or false
 
   -- If no path provided, use current file behavior
   if not path or path == "" then
@@ -144,6 +163,10 @@ function M.RevealInNetrw(path, use_lexplore)
   vim.schedule(function()
     close_empty_buffers()
   end)
+
+  if add_to_history then
+    M.add_path_to_history()
+  end
 
   -- Expand and normalize the path
   path = vim.fn.fnamemodify(path, ":p")
@@ -158,8 +181,14 @@ function M.RevealInNetrw(path, use_lexplore)
   local target_file
 
   if vim.fn.isdirectory(path) == 1 then
-    target_dir = path
-    target_file = nil
+    if reveal_dir then
+      local clean_path = path:gsub("/$", "")
+      target_dir = vim.fn.fnamemodify(clean_path, ":h")
+      target_file = vim.fn.fnamemodify(clean_path, ":t") .. "/"
+    else
+      target_dir = path
+      target_file = nil
+    end
   else
     target_dir = vim.fn.fnamemodify(path, ":h")
     target_file = vim.fn.fnamemodify(path, ":t")
@@ -189,16 +218,19 @@ function M.RevealInNetrw(path, use_lexplore)
     vim.cmd("silent Explore " .. vim.fn.fnameescape(target_dir))
   end
 
-  -- Track window count after opening netrw and store split state
-  local win_count_after = #vim.api.nvim_list_wins()
   local netrw_win = vim.api.nvim_get_current_win() -- Get the current window ID
 
-  -- If window count increased, netrw was opened in a split
-  M.netrw_window_split_state[netrw_win] = win_count_after > win_count_before
+  if not ignore_win_state then
+    -- Track window count after opening netrw and store split state
+    local win_count_after = #vim.api.nvim_list_wins()
+
+    -- If window count increased, netrw was opened in a split
+    M.netrw_window_split_state[netrw_win] = win_count_after > win_count_before
+  end
 
   if target_file then
     local ok = pcall(function()
-      vim.fn.setreg("/", target_file)
+      vim.fn.setreg("/", "^" .. target_file .. "[*/@=|]*$")
       vim.cmd("silent normal! n")
     end)
 
@@ -212,6 +244,8 @@ function M.RevealInNetrw(path, use_lexplore)
   end
 end
 
+---Switch to last active (or alternate #) buffer
+---@return nil
 function M.NetrwLastBuffer()
   local alt_bufnr = vim.fn.bufnr("#")
 
@@ -264,6 +298,7 @@ end
 ---@return nil
 function M.smart_enter()
   if is_current_selection_directory() then
+    M.add_path_to_history()
     vim.api.nvim_input("<Plug>NetrwLocalBrowseCheck")
   else
     local selected_file_path = vim.fn.fnamemodify(M.get_absolute_path(), ":p")
@@ -325,6 +360,9 @@ function M.close_netrw()
 
     -- Clean up tracking info
     M.netrw_window_split_state[current_win] = nil
+
+    -- Clear window history
+    history.clear_window_history(current_win)
   else
     -- We're NOT in netrw buffer (e.g., called from toggle)
     for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -344,6 +382,9 @@ function M.close_netrw()
 
         -- Clean up tracking info
         M.netrw_window_split_state[win] = nil
+
+        -- Clear window history
+        history.clear_window_history(win)
       end
     end
   end

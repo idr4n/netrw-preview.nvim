@@ -21,6 +21,7 @@ Along the way, I decided to also include other enhancements to improve my own wo
 - **Flexible Preview Layout**: Choose vertical or horizontal splits with configurable positioning and sizing
 - **Smart File Detection**: Automatically detects and handles non-text files with file size information
 - **Smart Enter Navigation**: Intelligent file/directory opening with proper alternate buffer handling
+- **History Tracking**: go back and forward in navigation history
 - **Flexible Directory Shortcuts**: Create custom keybindings for frequently accessed directories
 - **Dynamic Path Support**: Use functions for context-aware directory navigation
 - **Multiple Key Support**: Assign multiple keys to the same action for maximum flexibility
@@ -111,6 +112,18 @@ require("netrw-preview").setup({
 
     -- Enter directory/open file (smart enter)
     enter_dir = { "l", "<cr>" },
+
+    -- Go back in history
+    go_back = "<s-h>",
+
+    -- Go forward in history
+    go_forward = "<s-l>",
+
+    -- Go to the first entry in history
+    go_first = "<",
+
+    -- Go to the last entry in history
+    go_last = ">",
 
     -- Insert relative path in command line
     insert_path = ".",

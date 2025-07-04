@@ -14,6 +14,10 @@ local M = {}
 ---@field close_netrw string|string[]? Key(s) to close netrw (default: {"q", "gq", "<c-q>"}; "", false or {} to disable)
 ---@field parent_dir string|string[]? Key(s) to go to parent directory (default: {"h", "-"}; "", false or {} to disable)
 ---@field enter_dir string|string[]? Key(s) to enter directory (default: {"l", "<cr>"}, ""; false or {} to disable)
+---@field go_back string|string[]? Key(s) to go back in history (default: "<s-h>", ""; false or {} to disable)
+---@field go_forward string|string[]? Key(s) to go forward in history (default: "<s-l>", ""; false or {} to disable)
+---@field go_first string|string[]? Key(s) to go to the first entry in history (default: "<", ""; false or {} to disable)
+---@field go_last string|string[]? Key(s) to go to the last entry in history (default: ">", ""; false or {} to disable)
 ---@field insert_path string|string[]? Key(s) to insert relative path in command line (default: "."; "", false or {} to disable)
 ---@field yank_path string|string[]? Key(s) to yank absolute path (default: "Y"; "", false or {} to disable)
 ---@field mark_files_visual string|string[]? Key(s) to mark selected files in visul mode (default: "m"; "", false or {} to disable)
@@ -38,6 +42,10 @@ M.defaults = {
     close_netrw = { "q", "gq", "<c-q>" },
     parent_dir = { "h", "-" },
     enter_dir = { "l", "<cr>" },
+    go_back = "<s-h>",
+    go_forward = "<s-l>",
+    go_first = "<",
+    go_last = ">",
     insert_path = ".",
     yank_path = "Y",
     mark_files_visual = "m",
