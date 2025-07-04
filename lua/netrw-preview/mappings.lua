@@ -68,7 +68,7 @@ function M.setup_buffer_mappings()
 
   -- Parent directory mapping
   apply_mapping(config.mappings.parent_dir, function()
-    vim.api.nvim_input("-")
+    vim.api.nvim_input("<Plug>NetrwBrowseUpDir")
   end, {
     buffer = true,
     silent = true,

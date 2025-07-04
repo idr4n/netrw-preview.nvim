@@ -107,7 +107,7 @@ require("netrw-preview").setup({
     close_netrw = { "q", "gq", "<c-q>" },
 
     -- Navigate to parent directory
-    parent_dir = "h",
+    parent_dir = { "h", "-" },
 
     -- Enter directory/open file (smart enter)
     enter_dir = { "l", "<cr>" },
