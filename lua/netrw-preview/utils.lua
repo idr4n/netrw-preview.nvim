@@ -1,7 +1,6 @@
 ---@class NetrwPreview.Utils
 local M = {}
 
-local preview = require("netrw-preview.preview")
 local history = require("netrw-preview.history")
 
 -- These will be set from current buffer when netrw is opened
@@ -258,8 +257,8 @@ function M.NetrwLastBuffer()
   local previous_file = vim.fn.expand("%:p") -- Store current file before switching
 
   if current_filetype == "netrw" then
-    -- disable preview
-    preview.disable_preview({ delete_buffer = true })
+    -- disable preview using main module
+    require("netrw-preview").disable_preview({ delete_buffer = true })
     -- From netrw: just switch to alternate buffer (usually a regular file)
     vim.cmd("buffer #")
   else
@@ -304,8 +303,8 @@ function M.smart_enter()
     local selected_file_path = vim.fn.fnamemodify(M.get_absolute_path(), ":p")
     local ok, current_file_path = pcall(vim.api.nvim_buf_get_name, M.current_bufnr)
 
-    -- It's a file, open it (disable preview first)
-    preview.disable_preview({ delete_buffer = true })
+    -- It's a file, open it (disable preview first using main module)
+    require("netrw-preview").disable_preview({ delete_buffer = true })
     vim.api.nvim_input("<Plug>NetrwLocalBrowseCheck")
 
     if not ok then
@@ -338,7 +337,8 @@ function M.close_netrw()
     close_empty_buffers()
   end)
 
-  preview.disable_preview({ delete_buffer = true })
+  -- disable preview using main module
+  require("netrw-preview").disable_preview({ delete_buffer = true })
 
   local current_ft = vim.bo.filetype
 

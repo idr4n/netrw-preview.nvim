@@ -2,6 +2,10 @@
 local M = {}
 
 local config = require("netrw-preview.config")
+local Preview = require("netrw-preview.preview")
+
+---@type NetrwPreview.Preview?
+local current_preview = nil
 
 ---Setup the netrw-preview plugin
 ---@param opts? NetrwPreview.Config User configuration options
@@ -41,7 +45,7 @@ function M.setup(opts)
       -- Enable preview by default if configured
       if config.options.preview_enabled then
         vim.schedule(function()
-          require("netrw-preview.preview").enable_preview()
+          M.enable_preview()
         end)
       end
     end,
@@ -49,20 +53,54 @@ function M.setup(opts)
   })
 end
 
+---Get or create the current preview instance
+---@return NetrwPreview.Preview
+local function get_preview_instance()
+  if not current_preview then
+    current_preview = Preview.create({ config = config.options })
+  end
+  return current_preview
+end
+
 ---Enable preview functionality
 function M.enable_preview()
-  require("netrw-preview.preview").enable_preview()
+  local preview = get_preview_instance()
+  preview:enable_preview()
 end
 
 ---Disable preview functionality
 ---@param opts? {delete_buffer?: boolean} Options for disabling preview
 function M.disable_preview(opts)
-  require("netrw-preview.preview").disable_preview(opts)
+  if current_preview then
+    current_preview:disable_preview(opts)
+    if opts and opts.delete_buffer then
+      current_preview = nil
+    end
+  end
 end
 
 ---Toggle preview functionality on/off
 function M.toggle_preview()
-  require("netrw-preview.preview").toggle_preview()
+  local preview = get_preview_instance()
+  preview:toggle_preview()
+end
+
+---Check if preview is currently enabled
+---@return boolean True if preview is enabled
+function M.is_preview_enabled()
+  if not current_preview then
+    return false
+  end
+  return current_preview:is_preview_enabled()
+end
+
+---Get the preview buffer handle
+---@return integer? Buffer handle or nil if not created
+function M.get_preview_buffer()
+  if not current_preview then
+    return nil
+  end
+  return current_preview:get_preview_buffer()
 end
 
 ---Reveal current file in netrw

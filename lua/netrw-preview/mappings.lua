@@ -1,7 +1,6 @@
 ---@class NetrwPreview.MappingsModule
 local M = {}
 
-local preview = require("netrw-preview.preview")
 local utils = require("netrw-preview.utils")
 local history = require("netrw-preview.history")
 
@@ -49,9 +48,9 @@ function M.setup_buffer_mappings()
     return
   end
 
-  -- Toggle preview mapping
+  -- Toggle preview mapping - now uses the main module's toggle function
   apply_mapping(config.mappings.toggle_preview, function()
-    preview.toggle_preview()
+    require("netrw-preview").toggle_preview()
   end, {
     buffer = true,
     noremap = true,
