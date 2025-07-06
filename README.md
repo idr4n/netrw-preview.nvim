@@ -21,7 +21,7 @@ Along the way, I decided to also include other enhancements to improve my own wo
 - **Flexible Preview Layout**: Choose vertical or horizontal splits with configurable positioning and sizing
 - **Smart File Detection**: Automatically detects and handles non-text files with file size information
 - **Smart Enter Navigation**: Intelligent file/directory opening with proper alternate buffer handling
-- **History Tracking**: go back and forward in navigation history
+- **History Tracking**: Go back and forward in navigation history
 - **Flexible Directory Shortcuts**: Create custom keybindings for frequently accessed directories
 - **Dynamic Path Support**: Use functions for context-aware directory navigation
 - **Multiple Key Support**: Assign multiple keys to the same action for maximum flexibility
