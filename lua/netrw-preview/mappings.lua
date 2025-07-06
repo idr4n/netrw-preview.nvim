@@ -186,6 +186,12 @@ function M.setup_buffer_mappings()
     silent = true,
     desc = "Go to last entry in netrw history",
   })
+
+  apply_mapping(",h", history.print_history, {
+    buffer = true,
+    silent = true,
+    desc = "Print netrw history",
+  })
 end
 
 return M
