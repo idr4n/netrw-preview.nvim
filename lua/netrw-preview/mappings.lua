@@ -3,6 +3,7 @@ local M = {}
 
 local utils = require("netrw-preview.utils")
 local history = require("netrw-preview.history")
+local reveal = require("netrw-preview.reveal")
 
 ---Check if a mapping value is valid (not nil and not empty string)
 ---@param value any The mapping value to check
@@ -48,7 +49,7 @@ function M.setup_buffer_mappings()
     return
   end
 
-  -- Toggle preview mapping - now uses the main module's toggle function
+  -- Toggle preview mapping - uses the main module's toggle function
   apply_mapping(config.mappings.toggle_preview, function()
     require("netrw-preview").toggle_preview()
   end, {
@@ -58,8 +59,8 @@ function M.setup_buffer_mappings()
     desc = "Toggle netrw preview",
   })
 
-  -- Close netrw mappings
-  apply_mapping(config.mappings.close_netrw, utils.close_netrw, {
+  -- Close netrw mappings - uses reveal module
+  apply_mapping(config.mappings.close_netrw, reveal.close, {
     buffer = true,
     nowait = true,
     silent = true,
@@ -68,7 +69,7 @@ function M.setup_buffer_mappings()
 
   -- Parent directory mapping
   apply_mapping(config.mappings.parent_dir, function()
-    utils.add_path_to_history()
+    history.add_path_to_history()
     vim.api.nvim_input("<Plug>NetrwBrowseUpDir")
   end, {
     buffer = true,
@@ -76,10 +77,8 @@ function M.setup_buffer_mappings()
     desc = "Parent directory",
   })
 
-  -- Smart enter directory/file mapping
-  apply_mapping(config.mappings.enter_dir, function()
-    utils.smart_enter()
-  end, {
+  -- Smart enter directory/file mapping - uses reveal module
+  apply_mapping(config.mappings.enter_dir, reveal.smart_enter, {
     buffer = true,
     silent = true,
     desc = "Enter directory/file",

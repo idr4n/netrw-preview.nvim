@@ -23,12 +23,12 @@ function M.setup(opts)
     callback = function()
       if vim.bo.filetype == "netrw" then
         -- Track buffer context
-        local utils = require("netrw-preview.utils")
+        local reveal = require("netrw-preview.reveal")
         local cur_buf = vim.fn.bufnr("#")
 
         -- Check if alternate buffer exists and is valid
         if cur_buf ~= -1 and vim.api.nvim_buf_is_valid(cur_buf) and vim.bo[cur_buf].buflisted then
-          utils.current_bufnr = cur_buf
+          reveal.current_bufnr = cur_buf
         end
       end
     end,
@@ -105,34 +105,34 @@ end
 
 ---Reveal current file in netrw
 function M.reveal()
-  require("netrw-preview.utils").NetrwReveal()
+  require("netrw-preview.reveal").reveal()
 end
 
 ---Reveal current file in Lexplore
 function M.reveal_lex()
-  require("netrw-preview.utils").NetrwReveal(true)
+  require("netrw-preview.reveal").reveal(true)
 end
 
 ---Reveal specified file in netrw
 ---@param file_path string Path to the file to reveal
 function M.reveal_file(file_path)
-  require("netrw-preview.utils").RevealInNetrw(file_path)
+  require("netrw-preview.reveal").reveal_file(file_path)
 end
 
 ---Reveal specified file in Lexplore
 ---@param file_path string Path to the file to reveal
 function M.reveal_file_lex(file_path)
-  require("netrw-preview.utils").RevealInNetrw(file_path, true)
+  require("netrw-preview.reveal").reveal_file(file_path, true)
 end
 
 ---Toggle NetrwReveal (open netrw or close if already open)
 function M.reveal_file_toggle()
-  require("netrw-preview.utils").toggle_reveal()
+  require("netrw-preview.reveal").toggle()
 end
 
 ---Toggle NetrwRevealLex (open Lexplore or close if already open)
 function M.reveal_file_lex_toggle()
-  require("netrw-preview.utils").toggle_reveal(true)
+  require("netrw-preview.reveal").toggle(true)
 end
 
 return M

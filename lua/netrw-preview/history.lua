@@ -1,6 +1,8 @@
 ---@class NetrwPreview.History
 local M = {}
 
+local utils = require("netrw-preview.utils")
+
 ---@class PathHistory
 ---@field position integer Current position in the history
 ---@field paths string[] List of file paths
@@ -17,6 +19,15 @@ local MAX_HISTORY = 50
 function M.init_window_history(win_id)
   if not M.netrw_window_history[win_id] then
     M.netrw_window_history[win_id] = { position = 0, paths = {} }
+  end
+end
+
+---Add current path to history
+function M.add_path_to_history()
+  local win = vim.api.nvim_get_current_win()
+  local sel_path = vim.fn.fnamemodify(utils.get_absolute_path(), ":p")
+  if sel_path then
+    M.add_path(win, sel_path)
   end
 end
 
@@ -55,7 +66,7 @@ end
 ---Navigate backward in history
 ---@return nil
 function M.go_back()
-  local utils = require("netrw-preview.utils")
+  local reveal = require("netrw-preview.reveal")
   local win_id = vim.api.nvim_get_current_win()
   local history = M.netrw_window_history[win_id]
   local sel_path = utils.get_absolute_path()
@@ -95,7 +106,7 @@ function M.go_back()
   end
 
   -- print("(history " .. target_pos .. "/" .. #history.paths .. ")")
-  utils.RevealInNetrw(vim.fn.fnameescape(path), false, true, false, true)
+  reveal.reveal_file(vim.fn.fnameescape(path), false, true, false, true)
   history.position = target_pos
   -- M.print_history()
 end
@@ -103,7 +114,7 @@ end
 ---Navigate forward in history
 ---@return nil
 function M.go_forward()
-  local utils = require("netrw-preview.utils")
+  local reveal = require("netrw-preview.reveal")
   local win_id = vim.api.nvim_get_current_win()
   local history = M.netrw_window_history[win_id]
   local sel_path = utils.get_absolute_path()
@@ -135,14 +146,14 @@ function M.go_forward()
   end
 
   -- print("(history " .. target_pos .. "/" .. #history.paths .. ")")
-  utils.RevealInNetrw(vim.fn.fnameescape(path), false, true, false, true)
+  reveal.reveal_file(vim.fn.fnameescape(path), false, true, false, true)
   history.position = target_pos
   -- M.print_history()
 end
 
 ---Jump to first (oldest) entry in history
 function M.go_first()
-  local utils = require("netrw-preview.utils")
+  local reveal = require("netrw-preview.reveal")
   local win_id = vim.api.nvim_get_current_win()
   local history = M.netrw_window_history[win_id]
   local sel_path = utils.get_absolute_path()
@@ -172,13 +183,13 @@ function M.go_first()
   end
 
   local path = history.paths[1]
-  utils.RevealInNetrw(vim.fn.fnameescape(path), false, true, false, true)
+  reveal.reveal_file(vim.fn.fnameescape(path), false, true, false, true)
   history.position = 1
 end
 
 ---Jump to last (newest) entry in history
 function M.go_last()
-  local utils = require("netrw-preview.utils")
+  local reveal = require("netrw-preview.reveal")
   local win_id = vim.api.nvim_get_current_win()
   local history = M.netrw_window_history[win_id]
   local sel_path = utils.get_absolute_path()
@@ -204,7 +215,7 @@ function M.go_last()
   end
 
   local path = history.paths[cnt]
-  utils.RevealInNetrw(vim.fn.fnameescape(path), false, true, false, true)
+  reveal.reveal_file(vim.fn.fnameescape(path), false, true, false, true)
   history.position = cnt
 end
 
