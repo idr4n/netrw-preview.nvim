@@ -45,7 +45,7 @@ end, {
 })
 
 vim.api.nvim_create_user_command("NetrwLastBuffer", function()
-  require("netrw-preview.utils").NetrwLastBuffer()
+  require("netrw-preview.reveal").last_buffer()
 end, { desc = "Go to alternate buffer (with netrw reveal)" })
 
 vim.api.nvim_create_user_command("NetrwRevealToggle", function()
