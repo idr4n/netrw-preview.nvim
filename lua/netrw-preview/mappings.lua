@@ -113,7 +113,7 @@ function M.setup_buffer_mappings()
             final_path = vim.fn.expand(path)
           end
 
-          vim.cmd("NetrwRevealFile " .. vim.fn.fnameescape(final_path))
+          reveal.reveal_file(vim.fn.fnameescape(final_path), false, false, true, true)
         end, {
           buffer = true,
           silent = true,
