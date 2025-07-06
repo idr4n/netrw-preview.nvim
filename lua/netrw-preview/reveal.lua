@@ -148,7 +148,7 @@ end
 function M.reveal_file(path, use_lexplore, reveal_dir, add_to_history, ignore_win_state)
   use_lexplore = use_lexplore or false
   reveal_dir = reveal_dir or false
-  add_to_history = add_to_history == nil and true or false
+  add_to_history = add_to_history == nil and true or add_to_history
   ignore_win_state = ignore_win_state or false
 
   -- If no path provided, use current file behavior
