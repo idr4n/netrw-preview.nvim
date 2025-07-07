@@ -240,6 +240,111 @@ function Preview:open_preview_window()
   vim.api.nvim_win_set_cursor(current_win, cursor_pos)
 end
 
+---Display message for directory in tree view
+---@private
+function Preview:_display_tree_view_directory_message()
+  vim.api.nvim_buf_set_lines(self.preview_buf, 0, -1, false, {
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+    "              DIRECTORY IN TREE VIEW",
+    "",
+    "• Use Enter to expand/collapse directory",
+    "• Navigate with j/k or arrow keys",
+    "• Files inside will show preview when selected",
+    "",
+    "Note: Directory preview is disabled in tree",
+    "view to avoid path parsing issues",
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  })
+  vim.bo[self.preview_buf].filetype = ""
+end
+
+---Display message for binary files
+---@private
+---@param path string Path to the binary file
+function Preview:_display_binary_file_message(path)
+  local file_size = vim.fn.getfsize(path)
+  local size_str = ""
+  if file_size >= 0 then
+    if file_size >= 1048576 then
+      size_str = string.format(" (%.1f MB)", file_size / 1048576)
+    elseif file_size >= 1024 then
+      size_str = string.format(" (%.1f KB)", file_size / 1024)
+    else
+      size_str = string.format(" (%d bytes)", file_size)
+    end
+  end
+
+  vim.api.nvim_buf_set_lines(self.preview_buf, 0, -1, false, {
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+    "                BINARY FILE",
+    "              Preview not available",
+    "",
+    "File: " .. vim.fn.fnamemodify(path, ":t"),
+    "Size: " .. size_str,
+    "Type: Binary/Non-text file",
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  })
+  vim.bo[self.preview_buf].filetype = ""
+end
+
+---Display directory contents
+---@private
+---@param path string Path to the directory
+function Preview:_display_directory_contents(path)
+  local listing = vim.fn.glob(path .. "/*", false, true)
+  local lines = {}
+  for _, item in ipairs(listing) do
+    local item_name = vim.fn.fnamemodify(item, ":t")
+    if vim.fn.isdirectory(item) == 1 then
+      item_name = item_name .. "/"
+    end
+    table.insert(lines, item_name)
+  end
+
+  -- Sort directories first, then files, both alphabetically
+  table.sort(lines, function(a, b)
+    local a_is_dir = a:sub(-1) == "/"
+    local b_is_dir = b:sub(-1) == "/"
+    if a_is_dir ~= b_is_dir then
+      return a_is_dir
+    else
+      return a:lower() < b:lower()
+    end
+  end)
+
+  vim.api.nvim_buf_set_lines(self.preview_buf, 0, -1, false, lines)
+  vim.bo[self.preview_buf].filetype = "netrw"
+end
+
+---Display text file contents
+---@private
+---@param path string Path to the text file
+function Preview:_display_text_file_contents(path)
+  local success, lines = pcall(vim.fn.readfile, path)
+  if success and lines then
+    lines = split_lines_with_newlines(lines)
+
+    -- Limit preview to reasonable number of lines for performance
+    if #lines > 500 then
+      lines = vim.list_slice(lines, 1, 500)
+      table.insert(lines, "")
+      table.insert(lines, "... (file truncated for preview)")
+    end
+
+    vim.api.nvim_buf_set_lines(self.preview_buf, 0, -1, false, lines)
+    local ft = vim.filetype.match({ filename = path })
+    if ft then
+      vim.bo[self.preview_buf].filetype = ft
+    end
+  else
+    vim.api.nvim_buf_set_lines(self.preview_buf, 0, -1, false, {
+      "Error reading file: " .. path,
+      "This file may be corrupted or inaccessible.",
+    })
+    vim.bo[self.preview_buf].filetype = ""
+  end
+end
+
 ---Update the preview content based on cursor position in netrw
 function Preview:update_preview()
   if not self.preview_enabled then
@@ -257,23 +362,10 @@ function Preview:update_preview()
 
   local path = utils.get_absolute_path()
 
-  -- Check if we're in tree view and on a directory
+  -- Handle tree view directory case
   if (not path or path == "") and utils.is_tree_view_directory() then
-    -- Show message for directory in tree view
     vim.bo[self.preview_buf].modifiable = true
-    vim.api.nvim_buf_set_lines(self.preview_buf, 0, -1, false, {
-      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-      "              DIRECTORY IN TREE VIEW",
-      "",
-      "• Use Enter to expand/collapse directory",
-      "• Navigate with j/k or arrow keys",
-      "• Files inside will show preview when selected",
-      "",
-      "Note: Directory preview is disabled in tree",
-      "view to avoid path parsing issues",
-      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-    })
-    vim.bo[self.preview_buf].filetype = ""
+    self:_display_tree_view_directory_message()
     vim.bo[self.preview_buf].modifiable = false
     return
   end
@@ -284,38 +376,12 @@ function Preview:update_preview()
 
   -- Store current node path for comparison
   self.current_node_path = path
-
   vim.bo[self.preview_buf].modifiable = true
 
   local is_dir = vim.fn.isdirectory(path) == 1
 
   if is_dir then
-    -- Display directory contents
-    ---@type string[]
-    local listing = vim.fn.glob(path .. "/*", false, true)
-    ---@type string[]
-    local lines = {}
-    for _, item in ipairs(listing) do
-      local item_name = vim.fn.fnamemodify(item, ":t")
-      if vim.fn.isdirectory(item) == 1 then
-        item_name = item_name .. "/"
-      end
-      table.insert(lines, item_name)
-    end
-
-    -- Sort directories first, then files, both alphabetically
-    table.sort(lines, function(a, b)
-      local a_is_dir = a:sub(-1) == "/"
-      local b_is_dir = b:sub(-1) == "/"
-      if a_is_dir ~= b_is_dir then
-        return a_is_dir
-      else
-        return a:lower() < b:lower()
-      end
-    end)
-
-    vim.api.nvim_buf_set_lines(self.preview_buf, 0, -1, false, lines)
-    vim.bo[self.preview_buf].filetype = "netrw"
+    self:_display_directory_contents(path)
   else
     -- Check if file is readable
     if vim.fn.filereadable(path) ~= 1 then
@@ -327,54 +393,9 @@ function Preview:update_preview()
 
     -- Check if file is binary
     if is_binary_file(path) then
-      local file_size = vim.fn.getfsize(path)
-      local size_str = ""
-      if file_size >= 0 then
-        if file_size >= 1048576 then
-          size_str = string.format(" (%.1f MB)", file_size / 1048576)
-        elseif file_size >= 1024 then
-          size_str = string.format(" (%.1f KB)", file_size / 1024)
-        else
-          size_str = string.format(" (%d bytes)", file_size)
-        end
-      end
-
-      vim.api.nvim_buf_set_lines(self.preview_buf, 0, -1, false, {
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-        "                BINARY FILE",
-        "              Preview not available",
-        "",
-        "File: " .. vim.fn.fnamemodify(path, ":t"),
-        "Size: " .. size_str,
-        "Type: Binary/Non-text file",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-      })
-      vim.bo[self.preview_buf].filetype = ""
+      self:_display_binary_file_message(path)
     else
-      -- Display text file contents
-      local success, lines = pcall(vim.fn.readfile, path)
-      if success and lines then
-        lines = split_lines_with_newlines(lines)
-
-        -- Limit preview to reasonable number of lines for performance
-        if #lines > 500 then
-          lines = vim.list_slice(lines, 1, 500)
-          table.insert(lines, "")
-          table.insert(lines, "... (file truncated for preview)")
-        end
-
-        vim.api.nvim_buf_set_lines(self.preview_buf, 0, -1, false, lines)
-        local ft = vim.filetype.match({ filename = path })
-        if ft then
-          vim.bo[self.preview_buf].filetype = ft
-        end
-      else
-        vim.api.nvim_buf_set_lines(self.preview_buf, 0, -1, false, {
-          "Error reading file: " .. path,
-          "This file may be corrupted or inaccessible.",
-        })
-        vim.bo[self.preview_buf].filetype = ""
-      end
+      self:_display_text_file_contents(path)
     end
   end
 
