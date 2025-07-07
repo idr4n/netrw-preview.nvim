@@ -44,27 +44,6 @@ local function is_netrw_open()
   return false
 end
 
----Check if the current netrw selection is a directory
----@return boolean True if the current selection is a directory
-local function is_current_selection_directory()
-  local line = vim.api.nvim_get_current_line()
-  local name = line:gsub("%s+$", "") -- Trim trailing whitespace
-
-  -- Skip special entries
-  if name == "" or name == "." or name == ".." then
-    return true -- Treat as directory for navigation purposes
-  end
-
-  -- Check if line ends with "/" (netrw directory indicator)
-  if name:match("/$") then
-    return true
-  end
-
-  -- Get absolute path and check if it's a directory
-  local absolute_path = utils.get_absolute_path()
-  return vim.fn.isdirectory(absolute_path) == 1
-end
-
 ---Reveal current file in netrw file explorer
 ---Opens netrw in the directory of the current file and highlights it
 ---@param use_lexplore? boolean Whether to use Lexplore instead of Explore (default: false)
@@ -275,11 +254,13 @@ end
 ---Smart enter directory/file function
 ---@return nil
 function M.smart_enter()
-  if is_current_selection_directory() then
+  local absolute_path = utils.get_absolute_path()
+
+  if utils.is_directory(absolute_path) then
     history.add_path_to_history()
     vim.api.nvim_input("<Plug>NetrwLocalBrowseCheck")
   else
-    local selected_file_path = vim.fn.fnamemodify(utils.get_absolute_path(), ":p")
+    local selected_file_path = vim.fn.fnamemodify(absolute_path, ":p")
     local ok, current_file_path = pcall(vim.api.nvim_buf_get_name, M.current_bufnr)
 
     -- It's a file, open it (disable preview first using main module)

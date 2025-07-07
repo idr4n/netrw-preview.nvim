@@ -8,6 +8,8 @@
 ---@field config NetrwPreview.Config
 local Preview = {}
 
+local utils = require("netrw-preview.utils")
+
 ---Create a new preview instance
 ---@param opts? {config?: NetrwPreview.Config}
 ---@return NetrwPreview.Preview
@@ -253,24 +255,39 @@ function Preview:update_preview()
     return
   end
 
-  local line = vim.api.nvim_get_current_line()
-  local name = line:gsub("%s+$", "") -- Trim trailing whitespace
+  local path = utils.get_absolute_path()
 
-  if name == "" or name == "." or name == ".." then
+  -- Check if we're in tree view and on a directory
+  if (not path or path == "") and utils.is_tree_view_directory() then
+    -- Show message for directory in tree view
+    vim.bo[self.preview_buf].modifiable = true
+    vim.api.nvim_buf_set_lines(self.preview_buf, 0, -1, false, {
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "              DIRECTORY IN TREE VIEW",
+      "",
+      "• Use Enter to expand/collapse directory",
+      "• Navigate with j/k or arrow keys",
+      "• Files inside will show preview when selected",
+      "",
+      "Note: Directory preview is disabled in tree",
+      "view to avoid path parsing issues",
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+    })
+    vim.bo[self.preview_buf].filetype = ""
+    vim.bo[self.preview_buf].modifiable = false
     return
   end
 
-  local is_dir = name:match("/$")
-  if is_dir then
-    name = name:sub(1, -2) -- Remove trailing '/' for directories
+  if not path or path == "" then
+    return
   end
-
-  local path = vim.fn.fnamemodify(vim.b.netrw_curdir .. "/" .. name, ":p")
 
   -- Store current node path for comparison
   self.current_node_path = path
 
   vim.bo[self.preview_buf].modifiable = true
+
+  local is_dir = vim.fn.isdirectory(path) == 1
 
   if is_dir then
     -- Display directory contents
