@@ -192,4 +192,22 @@ function M.setup_buffer_mappings()
   })
 end
 
+---Setup buffer-specific key mappings for preview buffers
+---@return nil
+function M.setup_preview_buffer_mappings()
+  local config = require("netrw-preview.config").options
+
+  -- Early return if mappings are disabled
+  if not config.mappings.enabled then
+    return
+  end
+
+  apply_mapping(config.mappings.close_netrw, reveal.close, {
+    buffer = true,
+    nowait = true,
+    silent = true,
+    desc = "Close netrw",
+  })
+end
+
 return M

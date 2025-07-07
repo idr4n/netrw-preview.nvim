@@ -51,6 +51,16 @@ function M.setup(opts)
     end,
     desc = "Setup netrw preview mappings",
   })
+
+  -- Setup NetrwPreview buffer mappings
+  vim.api.nvim_create_autocmd("BufEnter", {
+    group = augroup,
+    pattern = "NetrwPreview",
+    callback = function()
+      require("netrw-preview.mappings").setup_preview_buffer_mappings()
+    end,
+    desc = "Setup preview buffer mappings",
+  })
 end
 
 ---Get or create the current preview instance
@@ -69,7 +79,7 @@ function M.enable_preview()
 end
 
 ---Disable preview functionality
----@param opts? {delete_buffer?: boolean} Options for disabling preview
+---@param opts? {delete_buffer: boolean} Options for disabling preview
 function M.disable_preview(opts)
   if current_preview then
     current_preview:disable_preview(opts)
